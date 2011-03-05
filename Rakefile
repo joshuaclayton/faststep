@@ -7,3 +7,11 @@ Rake::ExtensionTask.new("faststep") do |extension|
 end
 
 task :build => [:clean, :compile]
+
+require "spec/rake/spectask"
+
+Spec::Rake::SpecTask.new(:spec => :build) do |t|
+  t.spec_files = FileList['spec/**/*.rb']
+end
+
+task :default => :spec
