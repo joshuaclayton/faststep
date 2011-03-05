@@ -1,0 +1,3 @@
+module Faststep
+  # Your code goes here...
+end
