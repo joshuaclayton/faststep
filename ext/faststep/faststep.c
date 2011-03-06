@@ -1,8 +1,9 @@
-#include <ruby.h>
-#include <math.h>
 #include "faststep.h"
+#include "connection.h"
+#include "collection.h"
 
 void Init_faststep() {
-  Faststep           = rb_define_module("Faststep");
-  FaststepConnection = rb_define_class_under(Faststep, "Connection", rb_cObject);
+  VALUE Faststep = rb_define_module("Faststep");
+  connection_main(Faststep);
+  collection_main(Faststep);
 }

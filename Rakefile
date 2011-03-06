@@ -8,10 +8,8 @@ end
 
 task :build => [:clean, :compile]
 
-require "spec/rake/spectask"
+require "rspec/core/rake_task"
 
-Spec::Rake::SpecTask.new(:spec => :build) do |t|
-  t.spec_files = FileList['spec/**/*.rb']
-end
+RSpec::Core::RakeTask.new(:spec => :build)
 
 task :default => :spec

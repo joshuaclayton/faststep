@@ -1,5 +1,5 @@
-require "spec"
+require "rspec"
 require "faststep"
 
-Spec::Runner.configure do |config|
+RSpec.configure do |config|
 end

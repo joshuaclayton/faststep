@@ -1,5 +1,4 @@
 #ifndef FASTSTEP_H
+#include <ruby.h>
 #define FASTSTEP_H
-VALUE Faststep;
-VALUE FaststepConnection;
 #endif
