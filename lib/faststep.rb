@@ -1,3 +1,4 @@
+require "bson"
 require "faststep/faststep"
 
 module Faststep
