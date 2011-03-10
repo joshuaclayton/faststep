@@ -2,7 +2,9 @@ require "spec_helper"
 
 describe Faststep::Collection, "insert" do
   let(:connection) { Faststep::Connection.new("127.0.0.1", 27017) }
-  let(:db)         { connection.db("faststep-test") }
+  let(:db)         { connection.db("faststep_test") }
+
+  before { db.drop }
 
   it "inserts the correct documents" do
     db["something"].insert(:foo => "bar")
