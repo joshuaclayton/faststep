@@ -1,4 +1,5 @@
 #include "connection.h"
+#include "exceptions.h"
 
 void connection_main(VALUE faststep) {
   VALUE FaststepConnection = rb_define_class_under(faststep, "Connection", rb_cObject);
@@ -56,6 +57,10 @@ VALUE connection_connect(VALUE self) {
   options->port = NUM2INT(rb_iv_get(self, "@port"));
 
   mongo_connect(conn, options);
+
+  if(conn->connected == 0) {
+    RaiseFaststepException("ConnectionFailure", "unable to connect to Mongo");
+  }
 
   return Qnil;
 }

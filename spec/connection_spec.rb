@@ -22,3 +22,9 @@ describe Faststep::Connection do
     subject.should be_connected
   end
 end
+
+describe Faststep::Connection, "that doesn't connect due to misconfiguration" do
+  it "raises an exception" do
+    expect { Faststep::Connection.new("totally-bogus", 12345) }.to raise_error(Faststep::ConnectionFailure)
+  end
+end
