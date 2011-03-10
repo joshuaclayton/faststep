@@ -1,6 +1,8 @@
 require "bson"
-require "faststep/faststep"
 
 module Faststep
-  # Your code goes here...
+  autoload :Db,         "faststep/db"
+  autoload :Connection, "faststep/connection"
 end
+
+require "faststep/faststep"

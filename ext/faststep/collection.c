@@ -14,9 +14,9 @@ void collection_main(VALUE faststep) {
   return;
 }
 
-VALUE collection_init(VALUE self, VALUE name, VALUE db) {
+VALUE collection_init(VALUE self, VALUE name, VALUE database) {
   rb_iv_set(self, "@name", name);
-  rb_iv_set(self, "@db", db);
+  rb_iv_set(self, "@db", database);
 
   return self;
 }
@@ -33,22 +33,31 @@ void init_bson_from_ruby_hash(bson* bson, VALUE hash) {
   return;
 }
 
-VALUE collection_count(int argc, VALUE* argv, VALUE self) {
-  mongo_connection* conn;
-  Data_Get_Struct(rb_iv_get(self, "@db"), mongo_connection, conn);
+char* database_name(VALUE database) {
+  return RSTRING_PTR(rb_iv_get(database, "@name"));
+}
 
+char* collection_name(VALUE self) {
+  return RSTRING_PTR(rb_iv_get(self, "@name"));
+}
+
+mongo_connection* database_connection(VALUE database) {
+  mongo_connection* conn;
+  Data_Get_Struct(rb_iv_get(database, "@connection"), mongo_connection, conn);
+  return conn;
+}
+
+VALUE collection_count(int argc, VALUE* argv, VALUE self) {
   bson* bson_query = malloc(sizeof(bson));
 
   VALUE query;
   rb_scan_args(argc, argv, "01", &query);
 
-  if(NIL_P(query)) {
-    bson_empty(bson_query);
-  } else {
-    init_bson_from_ruby_hash(bson_query, query);
-  }
+  init_bson_from_ruby_hash(bson_query, query);
 
-  VALUE result = ULL2NUM(mongo_count(conn, "test", RSTRING_PTR(rb_iv_get(self, "@name")), bson_query));
+  VALUE db = rb_iv_get(self, "@db");
+
+  VALUE result = ULL2NUM(mongo_count(database_connection(db), database_name(db), collection_name(self), bson_query));
   bson_destroy(bson_query);
   return result;
 }
@@ -61,13 +70,13 @@ void collection_ns(char* ns, char* database, char* collection) {
 }
 
 VALUE collection_insert(VALUE self, VALUE document) {
-  mongo_connection* conn;
-  Data_Get_Struct(rb_iv_get(self, "@db"), mongo_connection, conn);
+  VALUE db = rb_iv_get(self, "@db");
+  mongo_connection* conn = database_connection(db);
 
   bson* bson_document = malloc(sizeof(bson));
 
   char ns[255];
-  collection_ns(ns, "test", RSTRING_PTR(rb_iv_get(self, "@name")));
+  collection_ns(ns, database_name(db), collection_name(self));
 
   init_bson_from_ruby_hash(bson_document, document);
 
@@ -79,14 +88,14 @@ VALUE collection_insert(VALUE self, VALUE document) {
 }
 
 VALUE collection_update(VALUE self, VALUE query, VALUE operations) {
-  mongo_connection* conn;
-  Data_Get_Struct(rb_iv_get(self, "@db"), mongo_connection, conn);
+  VALUE db = rb_iv_get(self, "@db");
+  mongo_connection* conn = database_connection(db);
 
   bson* bson_query      = malloc(sizeof(bson));
   bson* bson_operations = malloc(sizeof(bson));
 
   char ns[255];
-  collection_ns(ns, "test", RSTRING_PTR(rb_iv_get(self, "@name")));
+  collection_ns(ns, database_name(db), collection_name(self));
 
   init_bson_from_ruby_hash(bson_query, query);
   init_bson_from_ruby_hash(bson_operations, operations);
