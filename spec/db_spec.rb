@@ -12,6 +12,10 @@ describe Faststep::Db do
     subject.collection_names.should_not include(/$/)
   end
 
+  it "runs specific commands" do
+    expect { subject.command(:totally_bogus => 1) }.to raise_error(Faststep::OperationFailure)
+  end
+
   it "drops the database" do
     2.times { subject["something"].insert(:foo => "bar") }
     2.times { subject["another.thing"].insert(:baz => "qux") }

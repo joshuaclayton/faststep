@@ -4,4 +4,5 @@
 void db_main(VALUE);
 VALUE db_init(VALUE, VALUE, VALUE);
 VALUE db_drop(VALUE);
+VALUE db_command(VALUE, VALUE);
 #endif

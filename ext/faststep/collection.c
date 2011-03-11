@@ -1,5 +1,6 @@
 #include "collection.h"
 #include "mongo.h"
+#include "bson_ruby_conversion.h"
 #include <string.h>
 
 void collection_main(VALUE faststep) {
@@ -21,18 +22,6 @@ VALUE collection_init(VALUE self, VALUE name, VALUE database) {
   return self;
 }
 
-void init_bson_from_ruby_hash(bson* bson, VALUE hash) {
-  if(NIL_P(hash)) {
-    bson_empty(bson);
-  } else {
-    VALUE rb_bson = rb_const_get(rb_cObject, rb_intern("BSON"));
-    VALUE byte_buffer = rb_funcall(rb_bson, rb_intern("serialize"), 3, hash, Qfalse, Qfalse);
-    VALUE query = rb_funcall(byte_buffer, rb_intern("to_s"), 0);
-    bson_init(bson, RSTRING_PTR(query), 1);
-  }
-  return;
-}
-
 char* database_name(VALUE database) {
   return RSTRING_PTR(rb_iv_get(database, "@name"));
 }
@@ -48,11 +37,10 @@ mongo_connection* database_connection(VALUE database) {
 }
 
 VALUE collection_count(int argc, VALUE* argv, VALUE self) {
-  bson* bson_query = malloc(sizeof(bson));
-
   VALUE query;
   rb_scan_args(argc, argv, "01", &query);
 
+  bson* bson_query = malloc(sizeof(bson));
   init_bson_from_ruby_hash(bson_query, query);
 
   VALUE db = rb_iv_get(self, "@db");
@@ -66,6 +54,7 @@ void collection_ns(char* ns, char* database, char* collection) {
   strcat(ns, database);
   strcat(ns, ".");
   strcat(ns, collection);
+
   return;
 }
 
