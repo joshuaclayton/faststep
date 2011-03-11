@@ -9,6 +9,7 @@ void collection_main(VALUE faststep) {
   rb_define_attr(FaststepCollection, "name", 1, 0);
 
   rb_define_method(FaststepCollection, "initialize", collection_init, 2);
+  rb_define_method(FaststepCollection, "ns",         collection_ns, 0);
   rb_define_method(FaststepCollection, "count",      collection_count, -1);
   rb_define_method(FaststepCollection, "insert",     collection_insert, 1);
   rb_define_method(FaststepCollection, "update",     collection_update, 2);
@@ -22,12 +23,17 @@ VALUE collection_init(VALUE self, VALUE name, VALUE database) {
   return self;
 }
 
-char* database_name(VALUE database) {
-  return RSTRING_PTR(rb_iv_get(database, "@name"));
+VALUE collection_ns(VALUE self) {
+  VALUE db = rb_iv_get(self, "@db");
+
+  char ns[255] = "";
+  build_collection_ns(ns, _name(db), _name(self));
+
+  return rb_str_new2(ns);
 }
 
-char* collection_name(VALUE self) {
-  return RSTRING_PTR(rb_iv_get(self, "@name"));
+char* _name(VALUE obj) {
+  return RSTRING_PTR(rb_iv_get(obj, "@name"));
 }
 
 mongo_connection* database_connection(VALUE database) {
@@ -45,12 +51,12 @@ VALUE collection_count(int argc, VALUE* argv, VALUE self) {
 
   VALUE db = rb_iv_get(self, "@db");
 
-  VALUE result = ULL2NUM(mongo_count(database_connection(db), database_name(db), collection_name(self), bson_query));
+  VALUE result = ULL2NUM(mongo_count(database_connection(db), _name(db), _name(self), bson_query));
   bson_destroy(bson_query);
   return result;
 }
 
-void collection_ns(char* ns, char* database, char* collection) {
+void build_collection_ns(char* ns, char* database, char* collection) {
   strcat(ns, database);
   strcat(ns, ".");
   strcat(ns, collection);
@@ -64,12 +70,9 @@ VALUE collection_insert(VALUE self, VALUE document) {
 
   bson* bson_document = malloc(sizeof(bson));
 
-  char ns[255];
-  collection_ns(ns, database_name(db), collection_name(self));
-
   init_bson_from_ruby_hash(bson_document, document);
 
-  mongo_insert(conn, ns, bson_document);
+  mongo_insert(conn, RSTRING_PTR(collection_ns(self)), bson_document);
 
   bson_destroy(bson_document);
 
@@ -83,13 +86,10 @@ VALUE collection_update(VALUE self, VALUE query, VALUE operations) {
   bson* bson_query      = malloc(sizeof(bson));
   bson* bson_operations = malloc(sizeof(bson));
 
-  char ns[255];
-  collection_ns(ns, database_name(db), collection_name(self));
-
   init_bson_from_ruby_hash(bson_query, query);
   init_bson_from_ruby_hash(bson_operations, operations);
 
-  mongo_update(conn, ns, bson_query, bson_operations, MONGO_UPDATE_MULTI);
+  mongo_update(conn, RSTRING_PTR(collection_ns(self)), bson_query, bson_operations, MONGO_UPDATE_MULTI);
 
   bson_destroy(bson_query);
   bson_destroy(bson_operations);

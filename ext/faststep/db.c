@@ -46,7 +46,7 @@ VALUE db_command(VALUE self, VALUE command) {
   init_bson_from_ruby_hash(bson_command, command);
 
   char ns[500] = "";
-  collection_ns(ns, RSTRING_PTR(rb_iv_get(self, "@name")), "$cmd");
+  build_collection_ns(ns, RSTRING_PTR(rb_iv_get(self, "@name")), "$cmd");
 
   mongo_find_one(conn, ns, bson_command, NULL, result);
 

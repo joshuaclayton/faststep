@@ -13,6 +13,7 @@ describe Faststep::Db do
   end
 
   it "runs specific commands" do
+    expect { subject.command(:dbstats => 1) }.to_not raise_error
     expect { subject.command(:totally_bogus => 1) }.to raise_error(Faststep::OperationFailure)
   end
 
