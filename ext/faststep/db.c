@@ -54,5 +54,8 @@ VALUE db_command(VALUE self, VALUE command) {
 
   VALUE hash = ruby_hash_from_bson(result);
   bson_destroy(result);
+
+  ensure_document_ok(hash, 1);
+
   return hash;
 }
