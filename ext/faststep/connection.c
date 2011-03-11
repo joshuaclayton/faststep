@@ -18,7 +18,12 @@ void connection_main(VALUE faststep) {
 }
 
 void connection_free(mongo_connection* conn) {
-  mongo_destroy(conn);
+  printf("freeing connection... ");
+  if(mongo_destroy(conn)) {
+    printf("freed\n");
+  } else {
+    printf("not freed\n");
+  }
   return;
 }
 
@@ -59,6 +64,7 @@ VALUE connection_connect(VALUE self) {
   mongo_connect(conn, options);
 
   if(conn->connected == 0) {
+    mongo_destroy(conn);
     RaiseFaststepException("ConnectionFailure", "unable to connect to Mongo");
   }
 
