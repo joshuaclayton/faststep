@@ -1,10 +1,7 @@
 require "spec_helper"
 
 describe Faststep::Collection do
-  let(:connection) { Faststep::Connection.new("127.0.0.1", 27017) }
-  let(:db)         { connection.db("faststep_test") }
-
-  before { db.drop }
+  let(:db) { $faststep_test_db }
 
   it "inserts the correct documents" do
     db["something"].insert(:foo => "bar")
@@ -30,5 +27,11 @@ describe Faststep::Collection do
     db["something"].update({ :something => "fun" }, { "$set" => { :foo => "awesome" } })
 
     db["something"].find({}).first["foo"].should == "awesome"
+  end
+
+  it "drops collections" do
+    db["something"].insert(:foo => "bar")
+    db["something"].drop
+    db["something"].count.should be_zero
   end
 end

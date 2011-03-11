@@ -13,6 +13,7 @@ void collection_main(VALUE faststep) {
   rb_define_method(FaststepCollection, "count",      collection_count, -1);
   rb_define_method(FaststepCollection, "insert",     collection_insert, 1);
   rb_define_method(FaststepCollection, "update",     collection_update, 2);
+  rb_define_method(FaststepCollection, "drop",       collection_drop, 0);
   return;
 }
 
@@ -95,4 +96,14 @@ VALUE collection_update(VALUE self, VALUE query, VALUE operations) {
   bson_destroy(bson_operations);
 
   return Qtrue;
+}
+
+VALUE collection_drop(VALUE self) {
+  VALUE db = rb_iv_get(self, "@db");
+  mongo_connection* conn = database_connection(db);
+  if(mongo_cmd_drop_collection(conn, _name(db), _name(self), NULL)) {
+    return Qtrue;
+  } else {
+    return Qfalse;
+  }
 }

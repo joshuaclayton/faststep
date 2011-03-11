@@ -1,8 +1,7 @@
 require "spec_helper"
 
 describe Faststep::Db do
-  let(:connection) { Faststep::Connection.new("127.0.0.1", 27017) }
-  subject          { connection.db("faststep_test") }
+  subject { $faststep_test_db }
 
   it "knows its collection names" do
     subject["something"].insert(:foo => "bar")
@@ -23,7 +22,7 @@ describe Faststep::Db do
 
     subject.drop
 
-    subject["something"].count.should == 0
-    subject["another.thing"].count.should == 0
+    subject["something"].count.should be_zero
+    subject["another.thing"].count.should be_zero
   end
 end

@@ -1,11 +1,7 @@
 require "spec_helper"
 
 describe Faststep::Cursor do
-  let(:connection) { Faststep::Connection.new("127.0.0.1", 27017) }
-  let(:db)         { connection.db("faststep_test") }
-  let(:collection) { db["something"] }
-
-  before { db.drop }
+  let(:collection) { $faststep_test_db["something"] }
 
   it "finds documents" do
     10.times { collection.insert(:foo => "bar") }
