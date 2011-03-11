@@ -39,10 +39,10 @@ VALUE db_command(VALUE self, VALUE command) {
   mongo_connection* conn;
   Data_Get_Struct(rb_iv_get(self, "@connection"), mongo_connection, conn);
 
-  bson* result = malloc(sizeof(bson));
+  bson* result = bson_malloc(sizeof(bson));
   bson_init(result, "", 1);
 
-  bson* bson_command = malloc(sizeof(bson));
+  bson* bson_command = bson_malloc(sizeof(bson));
   init_bson_from_ruby_hash(bson_command, command);
 
   char ns[500] = "";

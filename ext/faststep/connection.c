@@ -18,12 +18,7 @@ void connection_main(VALUE faststep) {
 }
 
 void connection_free(mongo_connection* conn) {
-  printf("freeing connection... ");
-  if(mongo_destroy(conn)) {
-    printf("freed\n");
-  } else {
-    printf("not freed\n");
-  }
+  mongo_destroy(conn);
   return;
 }
 
@@ -38,6 +33,10 @@ static VALUE connection_init(VALUE self, VALUE host, VALUE port) {
 
 VALUE connection_new(VALUE class, VALUE host, VALUE port) {
   mongo_connection* conn = malloc(sizeof(mongo_connection));
+
+  if(conn == NULL) {
+    rb_raise(rb_eNoMemError, "Can't allocate enough memory for the connection.");
+  }
 
   conn->connected = 0;
 

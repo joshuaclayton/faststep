@@ -8,7 +8,7 @@ void init_bson_from_ruby_hash(bson* bson, VALUE hash) {
     VALUE rb_bson = rb_const_get(rb_cObject, rb_intern("BSON"));
     VALUE byte_buffer = rb_funcall(rb_bson, rb_intern("serialize"), 3, hash, Qfalse, Qfalse);
     VALUE query = rb_funcall(byte_buffer, rb_intern("to_s"), 0);
-    bson_init(bson, RSTRING_PTR(query), 1);
+    bson_init(bson, RSTRING_PTR(query), 0);
   }
   return;
 }

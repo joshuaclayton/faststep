@@ -47,7 +47,7 @@ VALUE collection_count(int argc, VALUE* argv, VALUE self) {
   VALUE query;
   rb_scan_args(argc, argv, "01", &query);
 
-  bson* bson_query = malloc(sizeof(bson));
+  bson* bson_query = bson_malloc(sizeof(bson));
   init_bson_from_ruby_hash(bson_query, query);
 
   VALUE db = rb_iv_get(self, "@db");
@@ -69,7 +69,7 @@ VALUE collection_insert(VALUE self, VALUE document) {
   VALUE db = rb_iv_get(self, "@db");
   mongo_connection* conn = database_connection(db);
 
-  bson* bson_document = malloc(sizeof(bson));
+  bson* bson_document = bson_malloc(sizeof(bson));
 
   init_bson_from_ruby_hash(bson_document, document);
 
@@ -84,8 +84,8 @@ VALUE collection_update(VALUE self, VALUE query, VALUE operations) {
   VALUE db = rb_iv_get(self, "@db");
   mongo_connection* conn = database_connection(db);
 
-  bson* bson_query      = malloc(sizeof(bson));
-  bson* bson_operations = malloc(sizeof(bson));
+  bson* bson_query      = bson_malloc(sizeof(bson));
+  bson* bson_operations = bson_malloc(sizeof(bson));
 
   init_bson_from_ruby_hash(bson_query, query);
   init_bson_from_ruby_hash(bson_operations, operations);

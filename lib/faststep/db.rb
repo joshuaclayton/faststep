@@ -1,7 +1,7 @@
 module Faststep
   class Db
     def collection(collection_name)
-      @collection ||= Collection.new(collection_name, self)
+      Collection.new(collection_name, self)
     end
 
     def collection_names
