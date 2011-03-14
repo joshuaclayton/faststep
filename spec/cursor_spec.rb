@@ -8,7 +8,7 @@ describe Faststep::Cursor do
 
     collection.count.should == 10
     cursor = Faststep::Cursor.new(collection, {})
-    cursor.map.length.should_not == 0
+    cursor.to_a.length.should_not == 0
     cursor.each do |doc|
       doc[:foo].should == "bar"
     end

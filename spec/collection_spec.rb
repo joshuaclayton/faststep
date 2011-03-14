@@ -35,3 +35,34 @@ describe Faststep::Collection do
     db["something"].count.should be_zero
   end
 end
+
+describe Faststep::Collection, "queries" do
+  let(:db) { $faststep_test_db }
+
+  before do
+    db["something"].insert(:foo => "bar")
+    db["something"].insert(:baz => "qux")
+    db["another.thing"].insert(:baz => "qux")
+  end
+
+  it "handles equality" do
+    db["something"].find("selector" => {:foo => "bar"}).to_a.tap do |documents|
+      documents.length.should == 1
+      documents.first["foo"].should == "bar"
+    end
+  end
+
+  it "handles $in" do
+    db["something"].find("selector" => {:foo => {"$in" => [nil, "bar"]}}).to_a.tap do |documents|
+      documents.length.should == 2
+      documents.first["foo"].should == "bar"
+    end
+  end
+
+  it "handles regexes" do
+    db["something"].find("selector" => { :baz => /q.[xyz]/ }).to_a.tap do |documents|
+      documents.length.should == 1
+      documents.first["baz"].should == "qux"
+    end
+  end
+end
