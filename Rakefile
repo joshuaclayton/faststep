@@ -22,31 +22,41 @@ task(:benchmark => :build) do
   require "mongo"
   require "bson"
 
+  insert_document_small  = {:foo => "bar"}
+  insert_document_medium = {
+    "one"   => "bar",
+    "two"   => [1,2,3,4],
+    "three" => 5.times.map { BSON::ObjectId.new },
+    "nest"  => {
+      "nest_again" => 2.times.map { BSON::ObjectId.new },
+      "more" => Time.now
+    }
+  }
+
+  insert_document_large = {
+    "here" => 5.times.map { insert_document_small },
+    "we"   => "ABCDEF"*5000,
+    "go"   => 3.times.map { insert_document_medium }
+  }
+
+
   faststep_bm_db = Faststep::Connection.new("127.0.0.1", 27017).db("faststep_bm")
   mongo_bm_db    = Mongo::Connection.new.db("mongo_bm")
 
-  faststep_bm_db.drop
-  mongo_bm_db.connection.drop_database("mongo_bm")
+  Benchmark.bmbm(50) do |benchmark|
+    count = 30000
 
-  insert_document_small  = {:foo => "bar"}
-  insert_document_medium = {"one" => "bar",
-                            "two" => [1,2,3,4],
-                            "three" => 5.times.map { BSON::ObjectId.new },
-                            "nest" => {
-                              "nest_again" => 2.times.map { BSON::ObjectId.new },
-                              "more" => Time.now
-                            }
-                           }
+    faststep_benchmark(benchmark, faststep_bm_db, :command => :insert, :times => count, :args => insert_document_small)
+    faststep_benchmark(benchmark, mongo_bm_db,    :command => :insert, :times => count, :args => insert_document_small)
 
-  Benchmark.bm(50) do |benchmark|
-    faststep_benchmark(benchmark, faststep_bm_db, :command => :insert, :times => 50000, :args => [insert_document_small])
-    faststep_benchmark(benchmark, mongo_bm_db,    :command => :insert, :times => 50000, :args => [insert_document_small])
+    faststep_benchmark(benchmark, faststep_bm_db, :command => :insert, :times => count, :args => insert_document_medium)
+    faststep_benchmark(benchmark, mongo_bm_db,    :command => :insert, :times => count, :args => insert_document_medium)
 
-    faststep_benchmark(benchmark, faststep_bm_db, :command => :insert, :times => 50000, :args => [insert_document_medium])
-    faststep_benchmark(benchmark, mongo_bm_db,    :command => :insert, :times => 50000, :args => [insert_document_medium])
+    faststep_benchmark(benchmark, faststep_bm_db, :command => :insert, :times => count/4, :args => insert_document_large)
+    faststep_benchmark(benchmark, mongo_bm_db,    :command => :insert, :times => count/4, :args => insert_document_large)
 
-    faststep_benchmark(benchmark, faststep_bm_db, :command => :count, :times => 10000)
-    faststep_benchmark(benchmark, mongo_bm_db,    :command => :count, :times => 10000)
+    faststep_benchmark(benchmark, faststep_bm_db, :command => :count, :times => count/2)
+    faststep_benchmark(benchmark, mongo_bm_db,    :command => :count, :times => count/2)
   end
 
   faststep_bm_db.drop
@@ -56,14 +66,19 @@ end
 def faststep_benchmark(benchmark, db_driver, options)
   command = options.delete(:command)
   times = options.delete(:times)
+
   benchmark.report("#{db_driver} #{command} #{times}x") do
-    times.times do
-      if !options[:args].nil?
-        db_driver["stuff"].send(command, *options[:args])
-      else
+    if !options[:args].nil?
+      times.times do |i|
+        # fucking object references that mongo modifies.
+        doc = options[:args].inject({}) {|r,(k,v)| r[k]=v;r }
+        db_driver["stuff"].send(command, doc)
+      end
+    else
+      times.times do
         db_driver["stuff"].send(command)
       end
     end
-    db_driver["stuff"].count
+    printf "%6d", db_driver["stuff"].count
   end
 end
