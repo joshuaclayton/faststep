@@ -46,21 +46,21 @@ describe Faststep::Collection, "queries" do
   end
 
   it "handles equality" do
-    db["something"].find("selector" => {:foo => "bar"}).to_a.tap do |documents|
+    db["something"].find(:foo => "bar").to_a.tap do |documents|
       documents.length.should == 1
       documents.first["foo"].should == "bar"
     end
   end
 
   it "handles $in" do
-    db["something"].find("selector" => {:foo => {"$in" => [nil, "bar"]}}).to_a.tap do |documents|
+    db["something"].find(:foo => {"$in" => [nil, "bar"]}).to_a.tap do |documents|
       documents.length.should == 2
       documents.first["foo"].should == "bar"
     end
   end
 
   it "handles regexes" do
-    db["something"].find("selector" => { :baz => /q.[xyz]/ }).to_a.tap do |documents|
+    db["something"].find(:baz => /q.[xyz]/).to_a.tap do |documents|
       documents.length.should == 1
       documents.first["baz"].should == "qux"
     end

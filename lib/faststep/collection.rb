@@ -1,7 +1,7 @@
 module Faststep
   class Collection
-    def find(selector)
-      Cursor.new(self, selector)
+    def find(selector = {}, options = {})
+      Cursor.new(self, "selector" => selector)
     end
   end
 end
