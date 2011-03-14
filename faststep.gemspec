@@ -19,8 +19,8 @@ Gem::Specification.new do |s|
   s.extensions = ["ext/faststep/extconf.rb"]
 
   s.add_dependency "rake-compiler", "0.7.6"
-  s.add_dependency "bson", "1.2.2"
-  s.add_dependency "bson_ext", "1.2.2"
+  s.add_dependency "bson", "1.2.4"
+  s.add_dependency "bson_ext", "1.2.4"
 
   s.add_development_dependency "rspec", "2.5.0"
 end
