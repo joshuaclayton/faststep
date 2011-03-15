@@ -1,18 +1,19 @@
 #include "connection.h"
 #include "exceptions.h"
+#include "faststep_defines.h"
 
-void connection_main(VALUE faststep) {
-  VALUE FaststepConnection = rb_define_class_under(faststep, "Connection", rb_cObject);
+void connection_main() {
+  rb_cFaststepConnection = rb_define_class_under(rb_mFaststep, "Connection", rb_cObject);
 
-  rb_define_attr(FaststepConnection, "host", 1, 0);
-  rb_define_attr(FaststepConnection, "port", 1, 0);
+  rb_define_attr(rb_cFaststepConnection, "host", 1, 0);
+  rb_define_attr(rb_cFaststepConnection, "port", 1, 0);
 
-  rb_define_singleton_method(FaststepConnection, "new",  connection_new, 2);
+  rb_define_singleton_method(rb_cFaststepConnection, "new",  connection_new, 2);
 
-  rb_define_method(FaststepConnection, "initialize",  connection_init, 2);
-  rb_define_method(FaststepConnection, "connect!",    connection_connect, 0);
-  rb_define_method(FaststepConnection, "disconnect!", connection_disconnect, 0);
-  rb_define_method(FaststepConnection, "connected?",  connection_connected, 0);
+  rb_define_method(rb_cFaststepConnection, "initialize",  connection_init, 2);
+  rb_define_method(rb_cFaststepConnection, "connect!",    connection_connect, 0);
+  rb_define_method(rb_cFaststepConnection, "disconnect!", connection_disconnect, 0);
+  rb_define_method(rb_cFaststepConnection, "connected?",  connection_connected, 0);
 
   return;
 }
@@ -82,9 +83,5 @@ VALUE connection_connected(VALUE self) {
   mongo_connection* conn;
   Data_Get_Struct(self, mongo_connection, conn);
 
-  if(conn->connected) {
-    return Qtrue;
-  } else {
-    return Qfalse;
-  }
+  return conn->connected ? Qtrue : Qfalse;
 }

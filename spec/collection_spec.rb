@@ -16,7 +16,6 @@ describe Faststep::Collection do
 
   it "supports batch inserting" do
     db["something"].insert([{:foo => "bar"}, {:baz => "qux"}])
-
     db["something"].count.should == 2
     db["something"].count(:foo => "bar").should == 1
   end
@@ -71,5 +70,37 @@ describe Faststep::Collection, "queries" do
       documents.length.should == 1
       documents.first["baz"].should == "qux"
     end
+  end
+end
+
+describe Faststep::Collection, "#insert" do
+  let(:large) {
+    {
+      'base_url' => 'http://www.example.com/test-me',
+      'total_word_count' => 6743,
+      'access_time' => Time.now,
+      'meta_tags' => {
+        'description' => 'i am a long description string',
+        'author' => 'Holly Man',
+        'dynamically_created_meta_tag' => 'who know\n what'
+      },
+      'page_structure' => {
+        'counted_tags' => 3450,
+        'no_of_js_attached' => 10,
+        'no_of_images' => 6
+      },
+      'harvested_words' => ['10gen','web','open','source','application','paas',
+        'platform-as-a-service','technology','helps',
+        'developers','focus','building','mongodb','mongo'] * 20
+    }
+  }
+
+  let(:db) { $faststep_test_db }
+  let(:document_count) { 100 }
+
+  xit "batch inserts multiple large documents" do
+    db["something"].insert([large] * document_count)
+    db["something"].count.should == document_count
+    db["something"].count("base_url" => large["base_url"]).should == document_count
   end
 end

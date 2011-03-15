@@ -1,17 +1,18 @@
 #include "cursor.h"
 #include "bson_ruby_conversion.h"
 #include "collection.h"
+#include "faststep_defines.h"
 
-void cursor_main(VALUE faststep) {
-  VALUE FaststepCursor = rb_define_class_under(faststep, "Cursor", rb_cObject);
+void cursor_main() {
+  rb_cFaststepCursor = rb_define_class_under(rb_mFaststep, "Cursor", rb_cObject);
 
-  rb_define_attr(FaststepCursor, "collection", 1, 0);
-  rb_include_module(FaststepCursor, rb_mEnumerable);
+  rb_define_attr(rb_cFaststepCursor, "collection", 1, 0);
+  rb_include_module(rb_cFaststepCursor, rb_mEnumerable);
 
-  rb_define_singleton_method(FaststepCursor, "new", cursor_new, 2);
+  rb_define_singleton_method(rb_cFaststepCursor, "new", cursor_new, 2);
 
-  rb_define_method(FaststepCursor, "initialize", cursor_init, 2);
-  rb_define_method(FaststepCursor, "each", cursor_each, 0);
+  rb_define_method(rb_cFaststepCursor, "initialize", cursor_init, 2);
+  rb_define_method(rb_cFaststepCursor, "each", cursor_each, 0);
 
   return;
 }

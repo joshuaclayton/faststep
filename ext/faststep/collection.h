@@ -4,7 +4,7 @@
 #include "bson.h"
 #define COLLECTION_H
 
-void collection_main(VALUE);
+void collection_main();
 VALUE collection_init(VALUE, VALUE, VALUE);
 VALUE collection_count(int, VALUE*, VALUE);
 VALUE collection_insert(VALUE, VALUE);

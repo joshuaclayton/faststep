@@ -1,20 +1,21 @@
 #include "collection.h"
 #include "mongo.h"
 #include "bson_ruby_conversion.h"
+#include "faststep_defines.h"
 #include <string.h>
 
-void collection_main(VALUE faststep) {
-  VALUE FaststepCollection = rb_define_class_under(faststep, "Collection", rb_cObject);
+void collection_main() {
+  rb_cFaststepCollection = rb_define_class_under(rb_mFaststep, "Collection", rb_cObject);
 
-  rb_define_attr(FaststepCollection, "name", 1, 0);
+  rb_define_attr(rb_cFaststepCollection, "name", 1, 0);
 
-  rb_define_method(FaststepCollection, "initialize",   collection_init, 2);
-  rb_define_method(FaststepCollection, "ns",           collection_ns, 0);
-  rb_define_method(FaststepCollection, "count",        collection_count, -1);
-  rb_define_method(FaststepCollection, "insert",       collection_insert, 1);
-  rb_define_method(FaststepCollection, "update",       collection_update, 2);
-  rb_define_method(FaststepCollection, "drop",         collection_drop, 0);
-  rb_define_method(FaststepCollection, "create_index", collection_create_index, 1);
+  rb_define_method(rb_cFaststepCollection, "initialize",   collection_init, 2);
+  rb_define_method(rb_cFaststepCollection, "ns",           collection_ns, 0);
+  rb_define_method(rb_cFaststepCollection, "count",        collection_count, -1);
+  rb_define_method(rb_cFaststepCollection, "insert",       collection_insert, 1);
+  rb_define_method(rb_cFaststepCollection, "update",       collection_update, 2);
+  rb_define_method(rb_cFaststepCollection, "drop",         collection_drop, 0);
+  rb_define_method(rb_cFaststepCollection, "create_index", collection_create_index, 1);
   return;
 }
 
@@ -71,22 +72,23 @@ VALUE collection_insert(VALUE self, VALUE documents) {
   mongo_connection* conn = database_connection(db);
 
   if(TYPE(documents) == T_ARRAY) {
-    int array_length = FIX2INT(rb_funcall(documents, rb_intern("length"), 0));
+    int document_count = FIX2INT(rb_funcall(documents, rb_intern("length"), 0));
     int iterator;
 
-    bson** bson_documents = (bson**)bson_malloc(sizeof(bson*) * array_length);
-    bson* bson_document = bson_malloc(sizeof(bson));
+    bson** bson_documents = (bson**)bson_malloc(sizeof(bson*) * document_count);
 
-    for(iterator = 0; iterator < array_length; iterator++) {
+    for(iterator = 0; iterator < document_count; iterator++) {
+      bson* bson_document = bson_malloc(sizeof(bson));
+
       VALUE document = rb_ary_entry(documents, iterator);
 
       init_bson_from_ruby_hash(bson_document, document);
       bson_documents[iterator] = bson_document;
     }
 
-    mongo_insert_batch(conn, RSTRING_PTR(collection_ns(self)), bson_documents, array_length);
+    mongo_insert_batch(conn, RSTRING_PTR(collection_ns(self)), bson_documents, document_count);
 
-    for(iterator = 0; iterator < array_length; iterator++) {
+    for(iterator = 0; iterator < document_count; iterator++) {
       bson_destroy(bson_documents[iterator]);
     }
   } else {
@@ -143,9 +145,5 @@ VALUE collection_create_index(VALUE self, VALUE indexes) {
   bson_destroy(bson_indexes);
   bson_destroy(bson_out);
 
-  if(result) {
-    return Qtrue;
-  } else {
-    return Qfalse;
-  }
+  return result ? Qtrue : Qfalse;
 }

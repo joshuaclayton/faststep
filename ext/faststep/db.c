@@ -3,18 +3,19 @@
 #include "bson.h"
 #include "collection.h"
 #include "bson_ruby_conversion.h"
+#include "faststep_defines.h"
 
-void db_main(VALUE faststep) {
-  VALUE FaststepDb = rb_define_class_under(faststep, "Db", rb_cObject);
+void db_main() {
+  rb_cFaststepDb = rb_define_class_under(rb_mFaststep, "Db", rb_cObject);
 
-  rb_define_attr(FaststepDb, "name", 1, 0);
-  rb_define_attr(FaststepDb, "connection", 1, 0);
+  rb_define_attr(rb_cFaststepDb, "name", 1, 0);
+  rb_define_attr(rb_cFaststepDb, "connection", 1, 0);
 
-  rb_define_alias(FaststepDb, "[]", "collection");
+  rb_define_alias(rb_cFaststepDb, "[]", "collection");
 
-  rb_define_method(FaststepDb, "initialize", db_init, 2);
-  rb_define_method(FaststepDb, "drop", db_drop, 0);
-  rb_define_method(FaststepDb, "command", db_command, 1);
+  rb_define_method(rb_cFaststepDb, "initialize", db_init, 2);
+  rb_define_method(rb_cFaststepDb, "drop",       db_drop, 0);
+  rb_define_method(rb_cFaststepDb, "command",    db_command, 1);
 }
 
 VALUE db_init(VALUE self, VALUE name, VALUE connection) {
@@ -28,11 +29,8 @@ VALUE db_drop(VALUE self) {
   mongo_connection* conn;
   Data_Get_Struct(rb_iv_get(self, "@connection"), mongo_connection, conn);
 
-  if(mongo_cmd_drop_db(conn, RSTRING_PTR(rb_iv_get(self, "@name")))) {
-    return Qtrue;
-  } else {
-    return Qfalse;
-  }
+  int result = mongo_cmd_drop_db(conn, RSTRING_PTR(rb_iv_get(self, "@name")));
+  return result ? Qtrue : Qfalse;
 }
 
 VALUE db_command(VALUE self, VALUE command) {
@@ -55,7 +53,7 @@ VALUE db_command(VALUE self, VALUE command) {
   VALUE hash = ruby_hash_from_bson(result);
   bson_destroy(result);
 
-  ensure_document_ok(hash, 1);
+  ensure_document_ok(hash);
 
   return hash;
 }
