@@ -8,12 +8,13 @@ void collection_main(VALUE faststep) {
 
   rb_define_attr(FaststepCollection, "name", 1, 0);
 
-  rb_define_method(FaststepCollection, "initialize", collection_init, 2);
-  rb_define_method(FaststepCollection, "ns",         collection_ns, 0);
-  rb_define_method(FaststepCollection, "count",      collection_count, -1);
-  rb_define_method(FaststepCollection, "insert",     collection_insert, 1);
-  rb_define_method(FaststepCollection, "update",     collection_update, 2);
-  rb_define_method(FaststepCollection, "drop",       collection_drop, 0);
+  rb_define_method(FaststepCollection, "initialize",   collection_init, 2);
+  rb_define_method(FaststepCollection, "ns",           collection_ns, 0);
+  rb_define_method(FaststepCollection, "count",        collection_count, -1);
+  rb_define_method(FaststepCollection, "insert",       collection_insert, 1);
+  rb_define_method(FaststepCollection, "update",       collection_update, 2);
+  rb_define_method(FaststepCollection, "drop",         collection_drop, 0);
+  rb_define_method(FaststepCollection, "create_index", collection_create_index, 1);
   return;
 }
 
@@ -65,17 +66,37 @@ void build_collection_ns(char* ns, char* database, char* collection) {
   return;
 }
 
-VALUE collection_insert(VALUE self, VALUE document) {
+VALUE collection_insert(VALUE self, VALUE documents) {
   VALUE db = rb_iv_get(self, "@db");
   mongo_connection* conn = database_connection(db);
 
-  bson* bson_document = bson_malloc(sizeof(bson));
+  if(TYPE(documents) == T_ARRAY) {
+    int array_length = FIX2INT(rb_funcall(documents, rb_intern("length"), 0));
+    int iterator;
 
-  init_bson_from_ruby_hash(bson_document, document);
+    bson** bson_documents = (bson**)bson_malloc(sizeof(bson*) * array_length);
+    bson* bson_document = bson_malloc(sizeof(bson));
 
-  mongo_insert(conn, RSTRING_PTR(collection_ns(self)), bson_document);
+    for(iterator = 0; iterator < array_length; iterator++) {
+      VALUE document = rb_ary_entry(documents, iterator);
 
-  bson_destroy(bson_document);
+      init_bson_from_ruby_hash(bson_document, document);
+      bson_documents[iterator] = bson_document;
+    }
+
+    mongo_insert_batch(conn, RSTRING_PTR(collection_ns(self)), bson_documents, array_length);
+
+    for(iterator = 0; iterator < array_length; iterator++) {
+      bson_destroy(bson_documents[iterator]);
+    }
+  } else {
+    bson* bson_document = bson_malloc(sizeof(bson));
+    init_bson_from_ruby_hash(bson_document, documents);
+
+    mongo_insert(conn, RSTRING_PTR(collection_ns(self)), bson_document);
+
+    bson_destroy(bson_document);
+  }
 
   return Qtrue;
 }
@@ -102,6 +123,27 @@ VALUE collection_drop(VALUE self) {
   VALUE db = rb_iv_get(self, "@db");
   mongo_connection* conn = database_connection(db);
   if(mongo_cmd_drop_collection(conn, _name(db), _name(self), NULL)) {
+    return Qtrue;
+  } else {
+    return Qfalse;
+  }
+}
+
+VALUE collection_create_index(VALUE self, VALUE indexes) {
+  VALUE db = rb_iv_get(self, "@db");
+  mongo_connection* conn = database_connection(db);
+
+  bson* bson_indexes = bson_malloc(sizeof(bson));
+  bson* bson_out     = bson_malloc(sizeof(bson));
+
+  init_bson_from_ruby_hash(bson_indexes, indexes);
+
+  int options = 0;
+  bson_bool_t result = mongo_create_index(conn, RSTRING_PTR(collection_ns(self)), bson_indexes, options, bson_out);
+  bson_destroy(bson_indexes);
+  bson_destroy(bson_out);
+
+  if(result) {
     return Qtrue;
   } else {
     return Qfalse;

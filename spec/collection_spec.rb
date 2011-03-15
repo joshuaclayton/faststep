@@ -14,6 +14,13 @@ describe Faststep::Collection do
     db["another.thing"].count(:baz => "qux").should == 1
   end
 
+  it "supports batch inserting" do
+    db["something"].insert([{:foo => "bar"}, {:baz => "qux"}])
+
+    db["something"].count.should == 2
+    db["something"].count(:foo => "bar").should == 1
+  end
+
   it "finds documents" do
     db["something"].insert(:foo => "bar")
     db["another.thing"].insert(:baz => "qux")
