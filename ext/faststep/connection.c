@@ -27,9 +27,8 @@ static VALUE faststep_connection_init(VALUE self, VALUE host, VALUE port) {
   return self;
 }
 
-VALUE faststep_connection_new(VALUE class, VALUE host, VALUE port) {
+static VALUE faststep_connection_new(VALUE class, VALUE host, VALUE port) {
   mongo_connection* conn = bson_malloc(sizeof(mongo_connection));
-  conn->connected = 0;
 
   VALUE tdata = Data_Wrap_Struct(class, NULL, mongo_destroy, conn);
 
@@ -42,26 +41,21 @@ VALUE faststep_connection_new(VALUE class, VALUE host, VALUE port) {
   return tdata;
 }
 
-VALUE faststep_connection_connect(VALUE self) {
+static VALUE faststep_connection_connect(VALUE self) {
   mongo_connection* conn;
   Data_Get_Struct(self, mongo_connection, conn);
 
-  mongo_connection_options options[1];
+  mongo_connection_options* options = bson_malloc(sizeof(mongo_connection_options));
 
   strcpy(options->host, RSTRING_PTR(rb_iv_get(self, "@host")));
   options->port = NUM2INT(rb_iv_get(self, "@port"));
 
-  mongo_connect(conn, options);
-
-  if(conn->connected == 0) {
-    mongo_destroy(conn);
-    RaiseFaststepException("ConnectionFailure", "unable to connect to Mongo");
-  }
+  _faststep_connect_or_raise(conn, options);
 
   return Qnil;
 }
 
-VALUE faststep_connection_disconnect(VALUE self) {
+static VALUE faststep_connection_disconnect(VALUE self) {
   mongo_connection* conn;
   Data_Get_Struct(self, mongo_connection, conn);
 
@@ -69,9 +63,20 @@ VALUE faststep_connection_disconnect(VALUE self) {
   return Qnil;
 }
 
-VALUE faststep_connection_connected(VALUE self) {
+static VALUE faststep_connection_connected(VALUE self) {
   mongo_connection* conn;
   Data_Get_Struct(self, mongo_connection, conn);
 
   return conn->connected ? Qtrue : Qfalse;
+}
+
+static void _faststep_connect_or_raise(mongo_connection* conn, mongo_connection_options* options) {
+  mongo_connect(conn, options);
+
+  if(conn->connected == 0) {
+    mongo_destroy(conn);
+    RaiseFaststepException("ConnectionFailure", "unable to connect to Mongo");
+  }
+
+  return;
 }
