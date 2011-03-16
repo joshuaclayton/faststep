@@ -6,7 +6,7 @@ void faststep_support_main() {
   rb_define_singleton_method(rb_mFaststepSupport, "ok?", faststep_support_ok, 1);
 }
 
-VALUE faststep_support_ok(VALUE self, VALUE document) {
+static VALUE faststep_support_ok(VALUE self, VALUE document) {
   VALUE ok_value = rb_hash_aref(document, rb_str_new2("ok"));
 
   int result = 0;

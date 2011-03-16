@@ -17,13 +17,36 @@ void faststep_cursor_main() {
   return;
 }
 
-VALUE faststep_cursor_init(VALUE self, VALUE collection, VALUE options) {
+static VALUE faststep_cursor_init(VALUE self, VALUE collection, VALUE options) {
   rb_iv_set(self, "@collection", collection);
 
   return self;
 }
 
-mongo_cursor* faststep_build_mongo_cursor(VALUE collection, VALUE options) {
+static VALUE faststep_cursor_new(VALUE class, VALUE collection, VALUE options) {
+  mongo_cursor* cursor = _faststep_build_mongo_cursor(collection, options);
+
+  VALUE tdata = Data_Wrap_Struct(class, NULL, mongo_cursor_destroy, cursor);
+
+  VALUE argv[2];
+  argv[0] = collection;
+  argv[1] = options;
+
+  rb_obj_call_init(tdata, 2, argv);
+
+  return tdata;
+}
+
+static VALUE faststep_cursor_each(VALUE self) {
+  mongo_cursor* cursor;
+  Data_Get_Struct(self, mongo_cursor, cursor);
+
+  while(mongo_cursor_next(cursor)) {
+    rb_yield(ruby_hash_from_bson(&cursor->current));
+  }
+}
+
+static mongo_cursor* _faststep_build_mongo_cursor(VALUE collection, VALUE options) {
   VALUE db = rb_iv_get(collection, "@db");
   VALUE faststep_conn = rb_iv_get(db, "@connection");
 
@@ -37,27 +60,4 @@ mongo_cursor* faststep_build_mongo_cursor(VALUE collection, VALUE options) {
   char* ns = RSTRING_PTR(rb_funcall(collection, rb_intern("ns"), 0));
 
   return mongo_find(conn, ns, selector, NULL, 0, 0, 0);
-}
-
-VALUE faststep_cursor_new(VALUE class, VALUE collection, VALUE options) {
-  mongo_cursor* cursor = faststep_build_mongo_cursor(collection, options);
-
-  VALUE tdata = Data_Wrap_Struct(class, NULL, mongo_cursor_destroy, cursor);
-
-  VALUE argv[2];
-  argv[0] = collection;
-  argv[1] = options;
-
-  rb_obj_call_init(tdata, 2, argv);
-
-  return tdata;
-}
-
-VALUE faststep_cursor_each(VALUE self) {
-  mongo_cursor* cursor;
-  Data_Get_Struct(self, mongo_cursor, cursor);
-
-  while(mongo_cursor_next(cursor)) {
-    rb_yield(ruby_hash_from_bson(&cursor->current));
-  }
 }

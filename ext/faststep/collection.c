@@ -18,7 +18,7 @@ void faststep_collection_main() {
   return;
 }
 
-VALUE faststep_collection_init(VALUE self, VALUE name, VALUE database) {
+static VALUE faststep_collection_init(VALUE self, VALUE name, VALUE database) {
   rb_iv_set(self, "@name", name);
   rb_iv_set(self, "@db", database);
 
@@ -29,22 +29,12 @@ VALUE faststep_collection_ns(VALUE self) {
   VALUE db = rb_iv_get(self, "@db");
 
   char ns[255] = "";
-  build_collection_ns(ns, _name(db), _name(self));
+  build_collection_ns(ns, _ivar_name(db), _ivar_name(self));
 
   return rb_str_new2(ns);
 }
 
-char* _name(VALUE obj) {
-  return RSTRING_PTR(rb_iv_get(obj, "@name"));
-}
-
-mongo_connection* faststep_database_connection(VALUE database) {
-  mongo_connection* conn;
-  Data_Get_Struct(rb_iv_get(database, "@connection"), mongo_connection, conn);
-  return conn;
-}
-
-VALUE faststep_collection_count(int argc, VALUE* argv, VALUE self) {
+static VALUE faststep_collection_count(int argc, VALUE* argv, VALUE self) {
   VALUE query;
   rb_scan_args(argc, argv, "01", &query);
 
@@ -53,7 +43,7 @@ VALUE faststep_collection_count(int argc, VALUE* argv, VALUE self) {
 
   VALUE db = rb_iv_get(self, "@db");
 
-  VALUE result = ULL2NUM(mongo_count(faststep_database_connection(db), _name(db), _name(self), bson_query));
+  VALUE result = ULL2NUM(mongo_count(_faststep_database_connection(db), _ivar_name(db), _ivar_name(self), bson_query));
   bson_destroy(bson_query);
   return result;
 }
@@ -66,9 +56,9 @@ void build_collection_ns(char* ns, char* database, char* collection) {
   return;
 }
 
-VALUE faststep_collection_insert(VALUE self, VALUE documents) {
+static VALUE faststep_collection_insert(VALUE self, VALUE documents) {
   VALUE db = rb_iv_get(self, "@db");
-  mongo_connection* conn = faststep_database_connection(db);
+  mongo_connection* conn = _faststep_database_connection(db);
 
   VALUE ns = faststep_collection_ns(self);
 
@@ -78,16 +68,61 @@ VALUE faststep_collection_insert(VALUE self, VALUE documents) {
 
     for(iterator = 0; iterator < document_count; iterator++) {
       VALUE document = rb_ary_entry(documents, iterator);
-      faststep_collection_insert_one(conn, RSTRING_PTR(ns), document);
+      _faststep_collection_insert_one(conn, RSTRING_PTR(ns), document);
     }
   } else {
-    faststep_collection_insert_one(conn, RSTRING_PTR(ns), documents);
+    _faststep_collection_insert_one(conn, RSTRING_PTR(ns), documents);
   }
 
   return Qtrue;
 }
 
-void faststep_collection_insert_one(mongo_connection* conn, char* ns, VALUE document) {
+static VALUE faststep_collection_update(VALUE self, VALUE query, VALUE operations) {
+  VALUE db = rb_iv_get(self, "@db");
+  mongo_connection* conn = _faststep_database_connection(db);
+
+  bson* bson_query      = bson_malloc(sizeof(bson));
+  bson* bson_operations = bson_malloc(sizeof(bson));
+
+  init_bson_from_ruby_hash(bson_query, query);
+  init_bson_from_ruby_hash(bson_operations, operations);
+
+  mongo_update(conn, RSTRING_PTR(faststep_collection_ns(self)), bson_query, bson_operations, MONGO_UPDATE_MULTI);
+
+  bson_destroy(bson_query);
+  bson_destroy(bson_operations);
+
+  return Qtrue;
+}
+
+static VALUE faststep_collection_drop(VALUE self) {
+  VALUE db = rb_iv_get(self, "@db");
+  mongo_connection* conn = _faststep_database_connection(db);
+  if(mongo_cmd_drop_collection(conn, _ivar_name(db), _ivar_name(self), NULL)) {
+    return Qtrue;
+  } else {
+    return Qfalse;
+  }
+}
+
+static VALUE faststep_collection_create_index(VALUE self, VALUE indexes) {
+  VALUE db = rb_iv_get(self, "@db");
+  mongo_connection* conn = _faststep_database_connection(db);
+
+  bson* bson_indexes = bson_malloc(sizeof(bson));
+  bson* bson_out     = bson_malloc(sizeof(bson));
+
+  init_bson_from_ruby_hash(bson_indexes, indexes);
+
+  int options = 0;
+  bson_bool_t result = mongo_create_index(conn, RSTRING_PTR(faststep_collection_ns(self)), bson_indexes, options, bson_out);
+  bson_destroy(bson_indexes);
+  bson_destroy(bson_out);
+
+  return result ? Qtrue : Qfalse;
+}
+
+static void _faststep_collection_insert_one(mongo_connection* conn, char* ns, VALUE document) {
   bson* bson_document = bson_malloc(sizeof(bson));
   init_bson_from_ruby_hash(bson_document, document);
 
@@ -96,7 +131,7 @@ void faststep_collection_insert_one(mongo_connection* conn, char* ns, VALUE docu
   bson_destroy(bson_document);
 }
 
-void faststep_collection_insert_batch(mongo_connection* conn, char* ns, VALUE documents) {
+static void _faststep_collection_insert_batch(mongo_connection* conn, char* ns, VALUE documents) {
   int document_count = RARRAY_LEN(documents);
   int iterator;
 
@@ -118,47 +153,12 @@ void faststep_collection_insert_batch(mongo_connection* conn, char* ns, VALUE do
   }
 }
 
-VALUE faststep_collection_update(VALUE self, VALUE query, VALUE operations) {
-  VALUE db = rb_iv_get(self, "@db");
-  mongo_connection* conn = faststep_database_connection(db);
-
-  bson* bson_query      = bson_malloc(sizeof(bson));
-  bson* bson_operations = bson_malloc(sizeof(bson));
-
-  init_bson_from_ruby_hash(bson_query, query);
-  init_bson_from_ruby_hash(bson_operations, operations);
-
-  mongo_update(conn, RSTRING_PTR(faststep_collection_ns(self)), bson_query, bson_operations, MONGO_UPDATE_MULTI);
-
-  bson_destroy(bson_query);
-  bson_destroy(bson_operations);
-
-  return Qtrue;
+static mongo_connection* _faststep_database_connection(VALUE database) {
+  mongo_connection* conn;
+  Data_Get_Struct(rb_iv_get(database, "@connection"), mongo_connection, conn);
+  return conn;
 }
 
-VALUE faststep_collection_drop(VALUE self) {
-  VALUE db = rb_iv_get(self, "@db");
-  mongo_connection* conn = faststep_database_connection(db);
-  if(mongo_cmd_drop_collection(conn, _name(db), _name(self), NULL)) {
-    return Qtrue;
-  } else {
-    return Qfalse;
-  }
-}
-
-VALUE faststep_collection_create_index(VALUE self, VALUE indexes) {
-  VALUE db = rb_iv_get(self, "@db");
-  mongo_connection* conn = faststep_database_connection(db);
-
-  bson* bson_indexes = bson_malloc(sizeof(bson));
-  bson* bson_out     = bson_malloc(sizeof(bson));
-
-  init_bson_from_ruby_hash(bson_indexes, indexes);
-
-  int options = 0;
-  bson_bool_t result = mongo_create_index(conn, RSTRING_PTR(faststep_collection_ns(self)), bson_indexes, options, bson_out);
-  bson_destroy(bson_indexes);
-  bson_destroy(bson_out);
-
-  return result ? Qtrue : Qfalse;
+static char* _ivar_name(VALUE obj) {
+  return RSTRING_PTR(rb_iv_get(obj, "@name"));
 }

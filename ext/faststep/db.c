@@ -18,14 +18,14 @@ void faststep_db_main() {
   rb_define_method(rb_cFaststepDb, "command",    faststep_db_command, 1);
 }
 
-VALUE faststep_db_init(VALUE self, VALUE name, VALUE connection) {
+static VALUE faststep_db_init(VALUE self, VALUE name, VALUE connection) {
   rb_iv_set(self, "@name", name);
   rb_iv_set(self, "@connection", connection);
 
   return self;
 }
 
-VALUE faststep_db_drop(VALUE self) {
+static VALUE faststep_db_drop(VALUE self) {
   mongo_connection* conn;
   Data_Get_Struct(rb_iv_get(self, "@connection"), mongo_connection, conn);
 
@@ -33,7 +33,7 @@ VALUE faststep_db_drop(VALUE self) {
   return result ? Qtrue : Qfalse;
 }
 
-VALUE faststep_db_command(VALUE self, VALUE command) {
+static VALUE faststep_db_command(VALUE self, VALUE command) {
   mongo_connection* conn;
   Data_Get_Struct(rb_iv_get(self, "@connection"), mongo_connection, conn);
 
