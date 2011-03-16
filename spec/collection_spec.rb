@@ -96,7 +96,7 @@ describe Faststep::Collection, "#insert" do
   }
 
   let(:db) { $faststep_test_db }
-  let(:document_count) { 100 }
+  let(:document_count) { 50 }
 
   it "batch inserts multiple large documents" do
     db["something"].insert([large] * document_count)

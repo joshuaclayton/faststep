@@ -47,9 +47,7 @@ static VALUE faststep_cursor_each(VALUE self) {
 }
 
 static mongo_cursor* _faststep_build_mongo_cursor(VALUE collection, VALUE options) {
-  bson* selector = bson_malloc(sizeof(bson));
-
-  init_bson_from_ruby_hash(selector, rb_hash_aref(options, rb_str_new2("selector")));
+  bson* selector = create_bson_from_ruby_hash(rb_hash_aref(options, rb_str_new2("selector")));
 
   mongo_cursor* result = mongo_find(GetFaststepConnectionForCollection(collection),
                                     RSTRING_PTR(rb_funcall(collection, rb_intern("ns"), 0)),

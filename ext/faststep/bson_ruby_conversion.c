@@ -2,7 +2,9 @@
 #include "exceptions.h"
 #include "faststep_defines.h"
 
-void init_bson_from_ruby_hash(bson* bson, VALUE hash) {
+bson* create_bson_from_ruby_hash(VALUE hash) {
+  bson* bson = bson_malloc(sizeof(bson));
+
   if(NIL_P(hash)) {
     bson_empty(bson);
   } else {
@@ -10,7 +12,8 @@ void init_bson_from_ruby_hash(bson* bson, VALUE hash) {
     VALUE query = rb_funcall(byte_buffer, rb_intern("to_s"), 0);
     bson_init(bson, RSTRING_PTR(query), 0);
   }
-  return;
+
+  return bson;
 }
 
 VALUE ruby_hash_from_bson(bson* bson) {

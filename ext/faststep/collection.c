@@ -39,8 +39,7 @@ static VALUE faststep_collection_count(int argc, VALUE* argv, VALUE self) {
   VALUE query;
   rb_scan_args(argc, argv, "01", &query);
 
-  bson* bson_query = bson_malloc(sizeof(bson));
-  init_bson_from_ruby_hash(bson_query, query);
+  bson* bson_query = create_bson_from_ruby_hash(query);
 
   int64_t count = mongo_count(GetFaststepConnectionForCollection(self),
                               _ivar_name(rb_iv_get(self, "@db")),
@@ -84,11 +83,8 @@ static VALUE faststep_collection_update(VALUE self, VALUE query, VALUE operation
   VALUE db = rb_iv_get(self, "@db");
   mongo_connection* conn = GetFaststepConnectionForCollection(self);
 
-  bson* bson_query      = bson_malloc(sizeof(bson));
-  bson* bson_operations = bson_malloc(sizeof(bson));
-
-  init_bson_from_ruby_hash(bson_query, query);
-  init_bson_from_ruby_hash(bson_operations, operations);
+  bson* bson_query      = create_bson_from_ruby_hash(query);
+  bson* bson_operations = create_bson_from_ruby_hash(operations);
 
   mongo_update(conn,
                RSTRING_PTR(faststep_collection_ns(self)),
@@ -117,10 +113,8 @@ static VALUE faststep_collection_create_index(VALUE self, VALUE indexes) {
   VALUE db = rb_iv_get(self, "@db");
   mongo_connection* conn = GetFaststepConnectionForCollection(self);
 
-  bson* bson_indexes = bson_malloc(sizeof(bson));
+  bson* bson_indexes = create_bson_from_ruby_hash(indexes);
   bson* bson_out     = bson_malloc(sizeof(bson));
-
-  init_bson_from_ruby_hash(bson_indexes, indexes);
 
   int options = 0;
   bson_bool_t result = mongo_create_index(conn,
@@ -135,11 +129,8 @@ static VALUE faststep_collection_create_index(VALUE self, VALUE indexes) {
 }
 
 static void _faststep_collection_insert_one(mongo_connection* conn, char* ns, VALUE document) {
-  bson* bson_document = bson_malloc(sizeof(bson));
-  init_bson_from_ruby_hash(bson_document, document);
-
+  bson* bson_document = create_bson_from_ruby_hash(document);
   mongo_insert(conn, ns, bson_document);
-
   bson_destroy(bson_document);
 }
 
@@ -150,12 +141,9 @@ static void _faststep_collection_insert_batch(mongo_connection* conn, char* ns, 
   bson** bson_documents = (bson**)bson_malloc(sizeof(bson*) * document_count);
 
   for(iterator = 0; iterator < document_count; iterator++) {
-    bson* bson_document = bson_malloc(sizeof(bson));
-
     VALUE document = rb_ary_entry(documents, iterator);
 
-    init_bson_from_ruby_hash(bson_document, document);
-    bson_documents[iterator] = bson_document;
+    bson_documents[iterator] = create_bson_from_ruby_hash(document);
   }
 
   mongo_insert_batch(conn, ns, bson_documents, document_count);

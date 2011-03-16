@@ -39,8 +39,7 @@ static VALUE faststep_db_command(VALUE self, VALUE command) {
   bson* result = bson_malloc(sizeof(bson));
   bson_init(result, "", 1);
 
-  bson* bson_command = bson_malloc(sizeof(bson));
-  init_bson_from_ruby_hash(bson_command, command);
+  bson* bson_command = create_bson_from_ruby_hash(command);
 
   char ns[500] = "";
   build_collection_ns(ns, RSTRING_PTR(rb_iv_get(self, "@name")), "$cmd");
