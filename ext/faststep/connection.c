@@ -33,7 +33,7 @@ static VALUE faststep_connection_init(VALUE self, VALUE host, VALUE port) {
 }
 
 VALUE faststep_connection_new(VALUE class, VALUE host, VALUE port) {
-  mongo_connection* conn = malloc(sizeof(mongo_connection));
+  mongo_connection* conn = bson_malloc(sizeof(mongo_connection));
 
   if(conn == NULL) {
     rb_raise(rb_eNoMemError, "Can't allocate enough memory for the connection.");
