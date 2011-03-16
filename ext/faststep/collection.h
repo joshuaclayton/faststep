@@ -15,7 +15,7 @@ VALUE faststep_collection_ns(VALUE);
 
 static void _faststep_collection_insert_one(mongo_connection*, char*, VALUE);
 static void _faststep_collection_insert_batch(mongo_connection*, char*, VALUE);
-static mongo_connection* _faststep_database_connection(VALUE);
+mongo_connection* GetFaststepConnectionForCollection(VALUE);
 
 void build_collection_ns(char*, char*, char*);
 static char* _ivar_name(VALUE);

@@ -1,4 +1,5 @@
 #include "collection.h"
+#include "connection.h"
 #include "bson_ruby_conversion.h"
 #include "faststep_defines.h"
 #include <string.h>
@@ -41,11 +42,13 @@ static VALUE faststep_collection_count(int argc, VALUE* argv, VALUE self) {
   bson* bson_query = bson_malloc(sizeof(bson));
   init_bson_from_ruby_hash(bson_query, query);
 
-  VALUE db = rb_iv_get(self, "@db");
+  int64_t count = mongo_count(GetFaststepConnectionForCollection(self),
+                              _ivar_name(rb_iv_get(self, "@db")),
+                              _ivar_name(self),
+                              bson_query);
 
-  VALUE result = ULL2NUM(mongo_count(_faststep_database_connection(db), _ivar_name(db), _ivar_name(self), bson_query));
   bson_destroy(bson_query);
-  return result;
+  return ULL2NUM(count);
 }
 
 void build_collection_ns(char* ns, char* database, char* collection) {
@@ -58,7 +61,7 @@ void build_collection_ns(char* ns, char* database, char* collection) {
 
 static VALUE faststep_collection_insert(VALUE self, VALUE documents) {
   VALUE db = rb_iv_get(self, "@db");
-  mongo_connection* conn = _faststep_database_connection(db);
+  mongo_connection* conn = GetFaststepConnectionForCollection(self);
 
   VALUE ns = faststep_collection_ns(self);
 
@@ -79,7 +82,7 @@ static VALUE faststep_collection_insert(VALUE self, VALUE documents) {
 
 static VALUE faststep_collection_update(VALUE self, VALUE query, VALUE operations) {
   VALUE db = rb_iv_get(self, "@db");
-  mongo_connection* conn = _faststep_database_connection(db);
+  mongo_connection* conn = GetFaststepConnectionForCollection(self);
 
   bson* bson_query      = bson_malloc(sizeof(bson));
   bson* bson_operations = bson_malloc(sizeof(bson));
@@ -87,7 +90,11 @@ static VALUE faststep_collection_update(VALUE self, VALUE query, VALUE operation
   init_bson_from_ruby_hash(bson_query, query);
   init_bson_from_ruby_hash(bson_operations, operations);
 
-  mongo_update(conn, RSTRING_PTR(faststep_collection_ns(self)), bson_query, bson_operations, MONGO_UPDATE_MULTI);
+  mongo_update(conn,
+               RSTRING_PTR(faststep_collection_ns(self)),
+               bson_query,
+               bson_operations,
+               MONGO_UPDATE_MULTI);
 
   bson_destroy(bson_query);
   bson_destroy(bson_operations);
@@ -97,7 +104,8 @@ static VALUE faststep_collection_update(VALUE self, VALUE query, VALUE operation
 
 static VALUE faststep_collection_drop(VALUE self) {
   VALUE db = rb_iv_get(self, "@db");
-  mongo_connection* conn = _faststep_database_connection(db);
+  mongo_connection* conn = GetFaststepConnectionForCollection(self);
+
   if(mongo_cmd_drop_collection(conn, _ivar_name(db), _ivar_name(self), NULL)) {
     return Qtrue;
   } else {
@@ -107,7 +115,7 @@ static VALUE faststep_collection_drop(VALUE self) {
 
 static VALUE faststep_collection_create_index(VALUE self, VALUE indexes) {
   VALUE db = rb_iv_get(self, "@db");
-  mongo_connection* conn = _faststep_database_connection(db);
+  mongo_connection* conn = GetFaststepConnectionForCollection(self);
 
   bson* bson_indexes = bson_malloc(sizeof(bson));
   bson* bson_out     = bson_malloc(sizeof(bson));
@@ -115,7 +123,11 @@ static VALUE faststep_collection_create_index(VALUE self, VALUE indexes) {
   init_bson_from_ruby_hash(bson_indexes, indexes);
 
   int options = 0;
-  bson_bool_t result = mongo_create_index(conn, RSTRING_PTR(faststep_collection_ns(self)), bson_indexes, options, bson_out);
+  bson_bool_t result = mongo_create_index(conn,
+                                          RSTRING_PTR(faststep_collection_ns(self)),
+                                          bson_indexes,
+                                          options,
+                                          bson_out);
   bson_destroy(bson_indexes);
   bson_destroy(bson_out);
 
@@ -153,12 +165,13 @@ static void _faststep_collection_insert_batch(mongo_connection* conn, char* ns, 
   }
 }
 
-static mongo_connection* _faststep_database_connection(VALUE database) {
-  mongo_connection* conn;
-  Data_Get_Struct(rb_iv_get(database, "@connection"), mongo_connection, conn);
-  return conn;
-}
-
 static char* _ivar_name(VALUE obj) {
   return RSTRING_PTR(rb_iv_get(obj, "@name"));
+}
+
+mongo_connection* GetFaststepConnectionForCollection(VALUE collection) {
+  VALUE db         = rb_iv_get(collection, "@db");
+  VALUE connection = rb_iv_get(db, "@connection");
+
+  return GetFaststepConnection(connection);
 }

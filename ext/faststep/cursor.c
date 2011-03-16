@@ -47,17 +47,17 @@ static VALUE faststep_cursor_each(VALUE self) {
 }
 
 static mongo_cursor* _faststep_build_mongo_cursor(VALUE collection, VALUE options) {
-  VALUE db = rb_iv_get(collection, "@db");
-  VALUE faststep_conn = rb_iv_get(db, "@connection");
-
-  mongo_connection* conn;
-  Data_Get_Struct(faststep_conn, mongo_connection, conn);
-
   bson* selector = bson_malloc(sizeof(bson));
 
   init_bson_from_ruby_hash(selector, rb_hash_aref(options, rb_str_new2("selector")));
 
-  char* ns = RSTRING_PTR(rb_funcall(collection, rb_intern("ns"), 0));
+  mongo_cursor* result = mongo_find(GetFaststepConnectionForCollection(collection),
+                                    RSTRING_PTR(rb_funcall(collection, rb_intern("ns"), 0)),
+                                    selector,
+                                    NULL,
+                                    0, 0, 0);
 
-  return mongo_find(conn, ns, selector, NULL, 0, 0, 0);
+  bson_destroy(selector);
+
+  return result;
 }

@@ -10,5 +10,7 @@ static VALUE faststep_connection_connect(VALUE);
 static VALUE faststep_connection_disconnect(VALUE);
 static VALUE faststep_connection_connected(VALUE);
 
+mongo_connection* GetFaststepConnection(VALUE);
+
 static void _faststep_connect_or_raise(mongo_connection*, mongo_connection_options*);
 #endif

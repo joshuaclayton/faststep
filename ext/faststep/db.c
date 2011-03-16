@@ -1,6 +1,7 @@
 #include "db.h"
 #include "mongo.h"
 #include "bson.h"
+#include "connection.h"
 #include "collection.h"
 #include "bson_ruby_conversion.h"
 #include "faststep_defines.h"
@@ -26,16 +27,14 @@ static VALUE faststep_db_init(VALUE self, VALUE name, VALUE connection) {
 }
 
 static VALUE faststep_db_drop(VALUE self) {
-  mongo_connection* conn;
-  Data_Get_Struct(rb_iv_get(self, "@connection"), mongo_connection, conn);
+  mongo_connection* conn = GetFaststepConnection(rb_iv_get(self, "@connection"));
 
   int result = mongo_cmd_drop_db(conn, RSTRING_PTR(rb_iv_get(self, "@name")));
   return result ? Qtrue : Qfalse;
 }
 
 static VALUE faststep_db_command(VALUE self, VALUE command) {
-  mongo_connection* conn;
-  Data_Get_Struct(rb_iv_get(self, "@connection"), mongo_connection, conn);
+  mongo_connection* conn = GetFaststepConnection(rb_iv_get(self, "@connection"));
 
   bson* result = bson_malloc(sizeof(bson));
   bson_init(result, "", 1);

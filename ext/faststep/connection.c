@@ -42,32 +42,24 @@ static VALUE faststep_connection_new(VALUE class, VALUE host, VALUE port) {
 }
 
 static VALUE faststep_connection_connect(VALUE self) {
-  mongo_connection* conn;
-  Data_Get_Struct(self, mongo_connection, conn);
-
   mongo_connection_options* options = bson_malloc(sizeof(mongo_connection_options));
 
   strcpy(options->host, RSTRING_PTR(rb_iv_get(self, "@host")));
   options->port = NUM2INT(rb_iv_get(self, "@port"));
 
-  _faststep_connect_or_raise(conn, options);
+  _faststep_connect_or_raise(GetFaststepConnection(self), options);
 
   return Qnil;
 }
 
 static VALUE faststep_connection_disconnect(VALUE self) {
-  mongo_connection* conn;
-  Data_Get_Struct(self, mongo_connection, conn);
+  mongo_disconnect(GetFaststepConnection(self));
 
-  mongo_disconnect(conn);
   return Qnil;
 }
 
 static VALUE faststep_connection_connected(VALUE self) {
-  mongo_connection* conn;
-  Data_Get_Struct(self, mongo_connection, conn);
-
-  return conn->connected ? Qtrue : Qfalse;
+  return GetFaststepConnection(self)->connected ? Qtrue : Qfalse;
 }
 
 static void _faststep_connect_or_raise(mongo_connection* conn, mongo_connection_options* options) {
@@ -79,4 +71,10 @@ static void _faststep_connect_or_raise(mongo_connection* conn, mongo_connection_
   }
 
   return;
+}
+
+mongo_connection* GetFaststepConnection(VALUE object) {
+  mongo_connection* conn;
+  Data_Get_Struct(object, mongo_connection, conn);
+  return conn;
 }
