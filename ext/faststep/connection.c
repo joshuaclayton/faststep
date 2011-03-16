@@ -18,11 +18,6 @@ void faststep_connection_main() {
   return;
 }
 
-void faststep_connection_free(mongo_connection* conn) {
-  mongo_destroy(conn);
-  return;
-}
-
 static VALUE faststep_connection_init(VALUE self, VALUE host, VALUE port) {
   rb_iv_set(self, "@host", host);
   rb_iv_set(self, "@port", port);
@@ -36,7 +31,7 @@ VALUE faststep_connection_new(VALUE class, VALUE host, VALUE port) {
   mongo_connection* conn = bson_malloc(sizeof(mongo_connection));
   conn->connected = 0;
 
-  VALUE tdata = Data_Wrap_Struct(class, NULL, faststep_connection_free, conn);
+  VALUE tdata = Data_Wrap_Struct(class, NULL, mongo_destroy, conn);
 
   VALUE argv[2];
   argv[0] = host;
