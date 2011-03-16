@@ -2,37 +2,37 @@
 #include "exceptions.h"
 #include "faststep_defines.h"
 
-void connection_main() {
+void faststep_connection_main() {
   rb_cFaststepConnection = rb_define_class_under(rb_mFaststep, "Connection", rb_cObject);
 
   rb_define_attr(rb_cFaststepConnection, "host", 1, 0);
   rb_define_attr(rb_cFaststepConnection, "port", 1, 0);
 
-  rb_define_singleton_method(rb_cFaststepConnection, "new",  connection_new, 2);
+  rb_define_singleton_method(rb_cFaststepConnection, "new", faststep_connection_new, 2);
 
-  rb_define_method(rb_cFaststepConnection, "initialize",  connection_init, 2);
-  rb_define_method(rb_cFaststepConnection, "connect!",    connection_connect, 0);
-  rb_define_method(rb_cFaststepConnection, "disconnect!", connection_disconnect, 0);
-  rb_define_method(rb_cFaststepConnection, "connected?",  connection_connected, 0);
+  rb_define_method(rb_cFaststepConnection, "initialize",  faststep_connection_init, 2);
+  rb_define_method(rb_cFaststepConnection, "connect!",    faststep_connection_connect, 0);
+  rb_define_method(rb_cFaststepConnection, "disconnect!", faststep_connection_disconnect, 0);
+  rb_define_method(rb_cFaststepConnection, "connected?",  faststep_connection_connected, 0);
 
   return;
 }
 
-void connection_free(mongo_connection* conn) {
+void faststep_connection_free(mongo_connection* conn) {
   mongo_destroy(conn);
   return;
 }
 
-static VALUE connection_init(VALUE self, VALUE host, VALUE port) {
+static VALUE faststep_connection_init(VALUE self, VALUE host, VALUE port) {
   rb_iv_set(self, "@host", host);
   rb_iv_set(self, "@port", port);
 
-  connection_connect(self);
+  faststep_connection_connect(self);
 
   return self;
 }
 
-VALUE connection_new(VALUE class, VALUE host, VALUE port) {
+VALUE faststep_connection_new(VALUE class, VALUE host, VALUE port) {
   mongo_connection* conn = malloc(sizeof(mongo_connection));
 
   if(conn == NULL) {
@@ -41,7 +41,7 @@ VALUE connection_new(VALUE class, VALUE host, VALUE port) {
 
   conn->connected = 0;
 
-  VALUE tdata = Data_Wrap_Struct(class, NULL, connection_free, conn);
+  VALUE tdata = Data_Wrap_Struct(class, NULL, faststep_connection_free, conn);
 
   VALUE argv[2];
   argv[0] = host;
@@ -52,7 +52,7 @@ VALUE connection_new(VALUE class, VALUE host, VALUE port) {
   return tdata;
 }
 
-VALUE connection_connect(VALUE self) {
+VALUE faststep_connection_connect(VALUE self) {
   mongo_connection* conn;
   Data_Get_Struct(self, mongo_connection, conn);
 
@@ -71,7 +71,7 @@ VALUE connection_connect(VALUE self) {
   return Qnil;
 }
 
-VALUE connection_disconnect(VALUE self) {
+VALUE faststep_connection_disconnect(VALUE self) {
   mongo_connection* conn;
   Data_Get_Struct(self, mongo_connection, conn);
 
@@ -79,7 +79,7 @@ VALUE connection_disconnect(VALUE self) {
   return Qnil;
 }
 
-VALUE connection_connected(VALUE self) {
+VALUE faststep_connection_connected(VALUE self) {
   mongo_connection* conn;
   Data_Get_Struct(self, mongo_connection, conn);
 

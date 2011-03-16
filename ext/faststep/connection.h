@@ -2,11 +2,11 @@
 #include <ruby.h>
 #include "mongo.h"
 #define CONNECTION_H
-void connection_main();
-void connection_free(mongo_connection*);
-static VALUE connection_init(VALUE, VALUE, VALUE);
-VALUE connection_new(VALUE, VALUE, VALUE);
-VALUE connection_connect(VALUE);
-VALUE connection_disconnect(VALUE);
-VALUE connection_connected(VALUE);
+void faststep_connection_main();
+void faststep_connection_free(mongo_connection*);
+static VALUE faststep_connection_init(VALUE, VALUE, VALUE);
+VALUE faststep_connection_new(VALUE, VALUE, VALUE);
+VALUE faststep_connection_connect(VALUE);
+VALUE faststep_connection_disconnect(VALUE);
+VALUE faststep_connection_connected(VALUE);
 #endif

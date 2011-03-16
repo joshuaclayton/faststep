@@ -5,7 +5,7 @@
 #include "bson_ruby_conversion.h"
 #include "faststep_defines.h"
 
-void db_main() {
+void faststep_db_main() {
   rb_cFaststepDb = rb_define_class_under(rb_mFaststep, "Db", rb_cObject);
 
   rb_define_attr(rb_cFaststepDb, "name", 1, 0);
@@ -13,19 +13,19 @@ void db_main() {
 
   rb_define_alias(rb_cFaststepDb, "[]", "collection");
 
-  rb_define_method(rb_cFaststepDb, "initialize", db_init, 2);
-  rb_define_method(rb_cFaststepDb, "drop",       db_drop, 0);
-  rb_define_method(rb_cFaststepDb, "command",    db_command, 1);
+  rb_define_method(rb_cFaststepDb, "initialize", faststep_db_init, 2);
+  rb_define_method(rb_cFaststepDb, "drop",       faststep_db_drop, 0);
+  rb_define_method(rb_cFaststepDb, "command",    faststep_db_command, 1);
 }
 
-VALUE db_init(VALUE self, VALUE name, VALUE connection) {
+VALUE faststep_db_init(VALUE self, VALUE name, VALUE connection) {
   rb_iv_set(self, "@name", name);
   rb_iv_set(self, "@connection", connection);
 
   return self;
 }
 
-VALUE db_drop(VALUE self) {
+VALUE faststep_db_drop(VALUE self) {
   mongo_connection* conn;
   Data_Get_Struct(rb_iv_get(self, "@connection"), mongo_connection, conn);
 
@@ -33,7 +33,7 @@ VALUE db_drop(VALUE self) {
   return result ? Qtrue : Qfalse;
 }
 
-VALUE db_command(VALUE self, VALUE command) {
+VALUE faststep_db_command(VALUE self, VALUE command) {
   mongo_connection* conn;
   Data_Get_Struct(rb_iv_get(self, "@connection"), mongo_connection, conn);
 

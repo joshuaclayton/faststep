@@ -1,8 +1,8 @@
 #ifndef DB_H
 #include <ruby.h>
 #define DB_H
-void db_main();
-VALUE db_init(VALUE, VALUE, VALUE);
-VALUE db_drop(VALUE);
-VALUE db_command(VALUE, VALUE);
+void  faststep_db_main();
+VALUE faststep_db_init(VALUE, VALUE, VALUE);
+VALUE faststep_db_drop(VALUE);
+VALUE faststep_db_command(VALUE, VALUE);
 #endif
