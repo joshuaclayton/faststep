@@ -71,36 +71,52 @@ VALUE collection_insert(VALUE self, VALUE documents) {
   VALUE db = rb_iv_get(self, "@db");
   mongo_connection* conn = database_connection(db);
 
+  VALUE ns = collection_ns(self);
+
   if(TYPE(documents) == T_ARRAY) {
-    int document_count = FIX2INT(rb_funcall(documents, rb_intern("length"), 0));
+    int document_count = RARRAY_LEN(documents);
     int iterator;
 
-    bson** bson_documents = (bson**)bson_malloc(sizeof(bson*) * document_count);
-
     for(iterator = 0; iterator < document_count; iterator++) {
-      bson* bson_document = bson_malloc(sizeof(bson));
-
       VALUE document = rb_ary_entry(documents, iterator);
-
-      init_bson_from_ruby_hash(bson_document, document);
-      bson_documents[iterator] = bson_document;
-    }
-
-    mongo_insert_batch(conn, RSTRING_PTR(collection_ns(self)), bson_documents, document_count);
-
-    for(iterator = 0; iterator < document_count; iterator++) {
-      bson_destroy(bson_documents[iterator]);
+      collection_insert_one(conn, RSTRING_PTR(ns), document);
     }
   } else {
-    bson* bson_document = bson_malloc(sizeof(bson));
-    init_bson_from_ruby_hash(bson_document, documents);
-
-    mongo_insert(conn, RSTRING_PTR(collection_ns(self)), bson_document);
-
-    bson_destroy(bson_document);
+    collection_insert_one(conn, RSTRING_PTR(ns), documents);
   }
 
   return Qtrue;
+}
+
+void collection_insert_one(mongo_connection* conn, char* ns, VALUE document) {
+  bson* bson_document = bson_malloc(sizeof(bson));
+  init_bson_from_ruby_hash(bson_document, document);
+
+  mongo_insert(conn, ns, bson_document);
+
+  bson_destroy(bson_document);
+}
+
+void collection_insert_batch(mongo_connection* conn, char* ns, VALUE documents) {
+  int document_count = RARRAY_LEN(documents);
+  int iterator;
+
+  bson** bson_documents = (bson**)bson_malloc(sizeof(bson*) * document_count);
+
+  for(iterator = 0; iterator < document_count; iterator++) {
+    bson* bson_document = bson_malloc(sizeof(bson));
+
+    VALUE document = rb_ary_entry(documents, iterator);
+
+    init_bson_from_ruby_hash(bson_document, document);
+    bson_documents[iterator] = bson_document;
+  }
+
+  mongo_insert_batch(conn, ns, bson_documents, document_count);
+
+  for(iterator = 0; iterator < document_count; iterator++) {
+    bson_destroy(bson_documents[iterator]);
+  }
 }
 
 VALUE collection_update(VALUE self, VALUE query, VALUE operations) {

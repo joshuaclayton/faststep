@@ -11,6 +11,10 @@ VALUE collection_insert(VALUE, VALUE);
 VALUE collection_update(VALUE, VALUE, VALUE);
 VALUE collection_drop(VALUE);
 VALUE collection_create_index(VALUE, VALUE);
+
+void collection_insert_one(mongo_connection*, char*, VALUE);
+void collection_insert_batch(mongo_connection*, char*, VALUE);
+
 VALUE collection_ns(VALUE);
 void build_collection_ns(char*, char*, char*);
 void init_bson_from_ruby_hash(bson*, VALUE);
