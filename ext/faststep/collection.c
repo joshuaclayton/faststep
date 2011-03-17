@@ -65,13 +65,7 @@ static VALUE faststep_collection_insert(VALUE self, VALUE documents) {
   VALUE ns = faststep_collection_ns(self);
 
   if(TYPE(documents) == T_ARRAY) {
-    int document_count = RARRAY_LEN(documents);
-    int iterator;
-
-    for(iterator = 0; iterator < document_count; iterator++) {
-      VALUE document = rb_ary_entry(documents, iterator);
-      _faststep_collection_insert_one(conn, RSTRING_PTR(ns), document);
-    }
+    _faststep_collection_insert_batch(conn, RSTRING_PTR(ns), documents);
   } else {
     _faststep_collection_insert_one(conn, RSTRING_PTR(ns), documents);
   }
@@ -135,22 +129,48 @@ static void _faststep_collection_insert_one(mongo_connection* conn, char* ns, VA
 }
 
 static void _faststep_collection_insert_batch(mongo_connection* conn, char* ns, VALUE documents) {
-  int document_count = RARRAY_LEN(documents);
-  int iterator;
+  int total_document_count = RARRAY_LEN(documents);
+  bson** bson_documents = (bson**)malloc(sizeof(bson*) * total_document_count);
 
-  bson** bson_documents = (bson**)bson_malloc(sizeof(bson*) * document_count);
+  int chunk_size = 1024*1024*16;
+  int sent_document_count    = 0,
+      current_bson_size      = 0,
+      current_document_count = 0,
+      iterator;
 
-  for(iterator = 0; iterator < document_count; iterator++) {
-    VALUE document = rb_ary_entry(documents, iterator);
+  for(iterator = 0; iterator < total_document_count; iterator++) {
+    int current_document_array_index = sent_document_count + current_document_count;
+    bson* document = create_bson_from_ruby_hash(rb_ary_entry(documents, current_document_array_index));
 
-    bson_documents[iterator] = create_bson_from_ruby_hash(document);
+    if(bson_size(document) + current_bson_size > chunk_size) {
+      mongo_insert_batch(conn, ns, bson_documents, current_document_count);
+      _faststep_collection_destroy(bson_documents, current_document_count);
+
+      sent_document_count += current_document_count;
+      total_document_count -= current_document_count;
+
+      current_bson_size = 0;
+      current_document_count = 0;
+      iterator = 0;
+    }
+
+    bson_documents[iterator] = document;
+    current_document_count += 1;
+    current_bson_size += bson_size(document);
   }
 
-  mongo_insert_batch(conn, ns, bson_documents, document_count);
+  if(current_document_count > 0) {
+    mongo_insert_batch(conn, ns, bson_documents, current_document_count);
+    _faststep_collection_destroy(bson_documents, current_document_count);
+  }
+}
 
+static void _faststep_collection_destroy(bson** bson_documents, int document_count) {
+  int iterator;
   for(iterator = 0; iterator < document_count; iterator++) {
     bson_destroy(bson_documents[iterator]);
   }
+  return;
 }
 
 static char* _ivar_name(VALUE obj) {

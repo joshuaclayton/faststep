@@ -3,17 +3,20 @@
 #include "faststep_defines.h"
 
 bson* create_bson_from_ruby_hash(VALUE hash) {
-  bson* bson = bson_malloc(sizeof(bson));
+  bson* document = bson_malloc(sizeof(bson));
 
   if(NIL_P(hash)) {
-    bson_empty(bson);
+    bson_empty(document);
   } else {
     VALUE byte_buffer = rb_funcall(rb_mBson, rb_intern("serialize"), 3, hash, Qfalse, Qfalse);
     VALUE query = rb_funcall(byte_buffer, rb_intern("to_s"), 0);
-    bson_init(bson, RSTRING_PTR(query), 0);
+    bson* temp_bson = bson_malloc(sizeof(bson));
+    bson_init(temp_bson, RSTRING_PTR(query), 0);
+    bson_copy(document, temp_bson);
+    bson_destroy(temp_bson);
   }
 
-  return bson;
+  return document;
 }
 
 VALUE ruby_hash_from_bson(bson* bson) {
