@@ -5,5 +5,5 @@
 bson* create_bson_from_ruby_hash(VALUE);
 VALUE ruby_hash_from_bson(bson*);
 VALUE ensure_document_ok(VALUE);
-char* invalid_command_description(VALUE);
+static char* _invalid_command_description(VALUE);
 #endif

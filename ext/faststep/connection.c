@@ -1,5 +1,4 @@
 #include "connection.h"
-#include "exceptions.h"
 #include "faststep_defines.h"
 
 void faststep_connection_main() {
@@ -67,7 +66,7 @@ static void _faststep_connect_or_raise(mongo_connection* conn, mongo_connection_
 
   if(conn->connected == 0) {
     mongo_destroy(conn);
-    RaiseFaststepException("ConnectionFailure", "unable to connect to Mongo");
+    rb_raise(rb_cFaststepConnectionFailure, "unable to connect to Mongo");
   }
 
   return;
