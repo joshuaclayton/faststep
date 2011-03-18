@@ -60,7 +60,6 @@ void build_collection_ns(char* ns, char* database, char* collection) {
 }
 
 static VALUE faststep_collection_insert(VALUE self, VALUE documents) {
-  VALUE db = rb_iv_get(self, "@db");
   mongo_connection* conn = GetFaststepConnectionForCollection(self);
 
   VALUE ns = faststep_collection_ns(self);
@@ -75,13 +74,10 @@ static VALUE faststep_collection_insert(VALUE self, VALUE documents) {
 }
 
 static VALUE faststep_collection_update(VALUE self, VALUE query, VALUE operations) {
-  VALUE db = rb_iv_get(self, "@db");
-  mongo_connection* conn = GetFaststepConnectionForCollection(self);
-
   bson* bson_query      = create_bson_from_ruby_hash(query);
   bson* bson_operations = create_bson_from_ruby_hash(operations);
 
-  mongo_update(conn,
+  mongo_update(GetFaststepConnectionForCollection(self),
                RSTRING_PTR(faststep_collection_ns(self)),
                bson_query,
                bson_operations,
@@ -107,31 +103,23 @@ static VALUE faststep_collection_remove(int argc, VALUE* argv, VALUE self) {
 }
 
 static VALUE faststep_collection_drop(VALUE self) {
-  VALUE db = rb_iv_get(self, "@db");
-  mongo_connection* conn = GetFaststepConnectionForCollection(self);
+  bson_bool_t result = mongo_cmd_drop_collection(GetFaststepConnectionForCollection(self),
+                                                 _ivar_name(rb_iv_get(self, "@db")),
+                                                 _ivar_name(self),
+                                                 NULL);
 
-  if(mongo_cmd_drop_collection(conn, _ivar_name(db), _ivar_name(self), NULL)) {
-    return Qtrue;
-  } else {
-    return Qfalse;
-  }
+  return result ? Qtrue : Qfalse;
 }
 
 static VALUE faststep_collection_create_index(VALUE self, VALUE indexes) {
-  VALUE db = rb_iv_get(self, "@db");
-  mongo_connection* conn = GetFaststepConnectionForCollection(self);
-
   bson* bson_indexes = create_bson_from_ruby_hash(indexes);
-  bson* bson_out     = bson_malloc(sizeof(bson));
 
-  int options = 0;
-  bson_bool_t result = mongo_create_index(conn,
+  bson_bool_t result = mongo_create_index(GetFaststepConnectionForCollection(self),
                                           RSTRING_PTR(faststep_collection_ns(self)),
                                           bson_indexes,
-                                          options,
-                                          bson_out);
+                                          0,
+                                          NULL);
   bson_destroy(bson_indexes);
-  bson_destroy(bson_out);
 
   return result ? Qtrue : Qfalse;
 }
