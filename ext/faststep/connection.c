@@ -13,6 +13,7 @@ void faststep_connection_main() {
   rb_define_method(rb_cFaststepConnection, "connect!",    faststep_connection_connect, 0);
   rb_define_method(rb_cFaststepConnection, "disconnect!", faststep_connection_disconnect, 0);
   rb_define_method(rb_cFaststepConnection, "connected?",  faststep_connection_connected, 0);
+  rb_define_method(rb_cFaststepConnection, "master?",     faststep_connection_master, 0);
 
   return;
 }
@@ -59,6 +60,11 @@ static VALUE faststep_connection_disconnect(VALUE self) {
 
 static VALUE faststep_connection_connected(VALUE self) {
   return GetFaststepConnection(self)->connected ? Qtrue : Qfalse;
+}
+
+static VALUE faststep_connection_master(VALUE self) {
+  bson_bool_t result = mongo_cmd_ismaster(GetFaststepConnection(self), NULL);
+  return result ? Qtrue : Qfalse;
 }
 
 static void _faststep_connect_or_raise(mongo_connection* conn, mongo_connection_options* options) {

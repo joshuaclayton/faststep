@@ -21,6 +21,10 @@ describe Faststep::Connection do
     subject.connect!
     subject.should be_connected
   end
+
+  it "connects to master by default" do
+    subject.should be_master
+  end
 end
 
 describe Faststep::Connection, "that doesn't connect due to misconfiguration" do

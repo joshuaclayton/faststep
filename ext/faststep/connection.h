@@ -9,6 +9,7 @@ static VALUE faststep_connection_new(VALUE, VALUE, VALUE);
 static VALUE faststep_connection_connect(VALUE);
 static VALUE faststep_connection_disconnect(VALUE);
 static VALUE faststep_connection_connected(VALUE);
+static VALUE faststep_connection_master(VALUE);
 
 mongo_connection* GetFaststepConnection(VALUE);
 
