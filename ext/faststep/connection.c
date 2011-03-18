@@ -1,5 +1,6 @@
 #include "connection.h"
 #include "faststep_defines.h"
+#include "bson_ruby_conversion.h"
 
 void faststep_connection_main() {
   rb_cFaststepConnection = rb_define_class_under(rb_mFaststep, "Connection", rb_cObject);
@@ -59,12 +60,11 @@ static VALUE faststep_connection_disconnect(VALUE self) {
 }
 
 static VALUE faststep_connection_connected(VALUE self) {
-  return GetFaststepConnection(self)->connected ? Qtrue : Qfalse;
+  return bool_to_ruby(GetFaststepConnection(self)->connected);
 }
 
 static VALUE faststep_connection_master(VALUE self) {
-  bson_bool_t result = mongo_cmd_ismaster(GetFaststepConnection(self), NULL);
-  return result ? Qtrue : Qfalse;
+  return bool_to_ruby(mongo_cmd_ismaster(GetFaststepConnection(self), NULL));
 }
 
 static void _faststep_connect_or_raise(mongo_connection* conn, mongo_connection_options* options) {

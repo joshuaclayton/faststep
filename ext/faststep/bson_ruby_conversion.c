@@ -18,6 +18,10 @@ bson* create_bson_from_ruby_hash(VALUE hash) {
   return document;
 }
 
+VALUE bool_to_ruby(bson_bool_t result) {
+  return result ? Qtrue : Qfalse;
+}
+
 VALUE ruby_hash_from_bson(bson* bson) {
   VALUE bson_buf = rb_str_new(bson->data, bson_size(bson));
 

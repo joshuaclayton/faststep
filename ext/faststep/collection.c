@@ -108,7 +108,7 @@ static VALUE faststep_collection_drop(VALUE self) {
                                                  _ivar_name(self),
                                                  NULL);
 
-  return result ? Qtrue : Qfalse;
+  return bool_to_ruby(result);
 }
 
 static VALUE faststep_collection_create_index(VALUE self, VALUE indexes) {
@@ -121,7 +121,7 @@ static VALUE faststep_collection_create_index(VALUE self, VALUE indexes) {
                                           NULL);
   bson_destroy(bson_indexes);
 
-  return result ? Qtrue : Qfalse;
+  return bool_to_ruby(result);
 }
 
 static void _faststep_collection_insert_one(mongo_connection* conn, char* ns, VALUE document) {

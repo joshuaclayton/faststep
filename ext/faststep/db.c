@@ -29,8 +29,7 @@ static VALUE faststep_db_init(VALUE self, VALUE name, VALUE connection) {
 static VALUE faststep_db_drop(VALUE self) {
   mongo_connection* conn = GetFaststepConnection(rb_iv_get(self, "@connection"));
 
-  int result = mongo_cmd_drop_db(conn, RSTRING_PTR(rb_iv_get(self, "@name")));
-  return result ? Qtrue : Qfalse;
+  return bool_to_ruby(mongo_cmd_drop_db(conn, RSTRING_PTR(rb_iv_get(self, "@name"))));
 }
 
 static VALUE faststep_db_command(VALUE self, VALUE command) {
