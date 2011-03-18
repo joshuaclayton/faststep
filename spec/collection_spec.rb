@@ -35,6 +35,16 @@ describe Faststep::Collection do
     db["something"].find({}).first["foo"].should == "awesome"
   end
 
+  it "removes documents" do
+    db["something"].insert(5.times.map { {:foo => "bar", :something => "fun"} })
+    db["something"].insert(:foo => "bar", :baz => "what!")
+
+    db["something"].remove(:baz => "what!")
+    db["something"].count.should == 5
+    db["something"].remove
+    db["something"].count.should be_zero
+  end
+
   it "drops collections" do
     db["something"].insert(:foo => "bar")
     db["something"].drop

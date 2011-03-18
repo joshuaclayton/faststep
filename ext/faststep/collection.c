@@ -14,6 +14,7 @@ void faststep_collection_main() {
   rb_define_method(rb_cFaststepCollection, "count",        faststep_collection_count, -1);
   rb_define_method(rb_cFaststepCollection, "insert",       faststep_collection_insert, 1);
   rb_define_method(rb_cFaststepCollection, "update",       faststep_collection_update, 2);
+  rb_define_method(rb_cFaststepCollection, "remove",       faststep_collection_remove, -1);
   rb_define_method(rb_cFaststepCollection, "drop",         faststep_collection_drop, 0);
   rb_define_method(rb_cFaststepCollection, "create_index", faststep_collection_create_index, 1);
   return;
@@ -90,6 +91,19 @@ static VALUE faststep_collection_update(VALUE self, VALUE query, VALUE operation
   bson_destroy(bson_operations);
 
   return Qtrue;
+}
+
+static VALUE faststep_collection_remove(int argc, VALUE* argv, VALUE self) {
+  VALUE query;
+  rb_scan_args(argc, argv, "01", &query);
+
+  bson* bson_query = create_bson_from_ruby_hash(query);
+
+  mongo_remove(GetFaststepConnectionForCollection(self),
+               RSTRING_PTR(faststep_collection_ns(self)),
+               bson_query);
+  bson_destroy(bson_query);
+  return Qnil;
 }
 
 static VALUE faststep_collection_drop(VALUE self) {

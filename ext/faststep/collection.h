@@ -9,6 +9,7 @@ static VALUE faststep_collection_init(VALUE, VALUE, VALUE);
 static VALUE faststep_collection_count(int, VALUE*, VALUE);
 static VALUE faststep_collection_insert(VALUE, VALUE);
 static VALUE faststep_collection_update(VALUE, VALUE, VALUE);
+static VALUE faststep_collection_remove(int, VALUE*, VALUE);
 static VALUE faststep_collection_drop(VALUE);
 static VALUE faststep_collection_create_index(VALUE, VALUE);
 VALUE faststep_collection_ns(VALUE);
