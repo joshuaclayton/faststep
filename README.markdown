@@ -70,6 +70,12 @@ to test Faststep's speed, and all operations are anywhere between 10% (finding r
 and 120% faster (inserting small/medium indexed documents and inserting small/medium documents in batches).
 See https://gist.github.com/870297 for benchmarks.
 
+I started writing this driver for a project I'm working on called [Crowdtap](http://crowdtap.com),
+which uses Mongo as its primary data store. I'd dabbled in C extensions before and
+figured I could leverage this knowledge to speed up certain operations we were doing.
+If it wasn't for them and their belief that I could get something usable in a short time,
+this project probably wouldn't exist; thanks guys!
+
 ### License
 
 The Mongo C driver code has retained its Apache license; I've released faststep under an MIT license (see
