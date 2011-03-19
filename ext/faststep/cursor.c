@@ -48,14 +48,16 @@ static VALUE faststep_cursor_each(VALUE self) {
 
 static mongo_cursor* _faststep_build_mongo_cursor(VALUE collection, VALUE options) {
   bson* selector = create_bson_from_ruby_hash(rb_hash_aref(options, rb_str_new2("selector")));
+  bson* fields   = bson_from_ruby_array(rb_hash_aref(options, rb_str_new2("fields")));
 
   mongo_cursor* result = mongo_find(GetFaststepConnectionForCollection(collection),
                                     RSTRING_PTR(rb_funcall(collection, rb_intern("ns"), 0)),
                                     selector,
-                                    NULL,
+                                    fields,
                                     0, 0, 0);
 
   bson_destroy(selector);
+  bson_destroy(fields);
 
   return result;
 }

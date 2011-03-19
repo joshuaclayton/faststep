@@ -1,7 +1,7 @@
 module Faststep
   class Collection
     def find(selector = {}, options = {})
-      Cursor.new(self, "selector" => selector)
+      Cursor.new(self, { "selector" => selector }.merge(options))
     end
 
     def find_one(spec_or_object_id=nil, opts={})

@@ -18,6 +18,19 @@ bson* create_bson_from_ruby_hash(VALUE hash) {
   return document;
 }
 
+bson* bson_from_ruby_array(VALUE array) {
+  VALUE hash = rb_hash_new();
+
+  if(!NIL_P(array)) {
+    int iterator;
+    for(iterator = 0; iterator < RARRAY_LEN(array); iterator++) {
+      rb_hash_aset(hash, rb_ary_entry(array, iterator), INT2NUM(1));
+    }
+  }
+
+  create_bson_from_ruby_hash(hash);
+}
+
 VALUE bool_to_ruby(bson_bool_t result) {
   return result ? Qtrue : Qfalse;
 }
