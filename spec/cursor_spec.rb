@@ -40,6 +40,17 @@ describe Faststep::Cursor do
     documents.first["name"].should == "Person 0"
   end
 
+  it "skips documents" do
+    collection.insert(:name => "John Doe",   :age => 25, :gender => "Male",   :postal_code => "02108")
+    collection.insert(:name => "Jane Doe",   :age => 22, :gender => "Female", :postal_code => "02108")
+    collection.insert(:name => "John Smith", :age => 40, :gender => "Male",   :postal_code => "02108")
+
+    documents = collection.find({}, { "skip" => 1 }).to_a
+    documents.length.should == 2
+    documents[0]["name"].should == "Jane Doe"
+    documents[1]["name"].should == "John Smith"
+  end
+
   it "caches documents" do
     10.times { collection.insert(:foo => "bar") }
 

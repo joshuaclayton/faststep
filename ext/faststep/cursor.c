@@ -55,11 +55,16 @@ static mongo_cursor* _faststep_build_mongo_cursor(VALUE collection, VALUE option
     limit = FIX2INT(rb_hash_aref(options, rb_str_new2("limit")));
   }
 
+  int skip = 0;
+  if(!NIL_P(rb_hash_aref(options, rb_str_new2("skip")))) {
+    skip = FIX2INT(rb_hash_aref(options, rb_str_new2("skip")));
+  }
+
   mongo_cursor* result = mongo_find(GetFaststepConnectionForCollection(collection),
                                     RSTRING_PTR(rb_funcall(collection, rb_intern("ns"), 0)),
                                     selector,
                                     fields,
-                                    limit, 0, 0);
+                                    limit, skip, 0);
 
   bson_destroy(selector);
   bson_destroy(fields);
