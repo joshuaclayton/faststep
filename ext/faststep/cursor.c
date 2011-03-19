@@ -13,6 +13,7 @@ void faststep_cursor_main() {
   rb_define_method(rb_cFaststepCursor, "explain",    faststep_cursor_explain, 0);
   rb_define_method(rb_cFaststepCursor, "skip",       faststep_cursor_skip, 1);
   rb_define_method(rb_cFaststepCursor, "limit",      faststep_cursor_limit, 1);
+  rb_define_method(rb_cFaststepCursor, "fields",     faststep_cursor_fields, 1);
   rb_define_method(rb_cFaststepCursor, "each",       faststep_cursor_each, 0);
 
   return;
@@ -66,6 +67,11 @@ static VALUE faststep_cursor_skip(VALUE self, VALUE skip_count) {
 
 static VALUE faststep_cursor_limit(VALUE self, VALUE limit_count) {
   rb_iv_set(self, "@limit", limit_count);
+  return self;
+}
+
+static VALUE faststep_cursor_fields(VALUE self, VALUE fields) {
+  rb_iv_set(self, "@fields", fields);
   return self;
 }
 

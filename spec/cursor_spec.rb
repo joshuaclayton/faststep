@@ -18,7 +18,7 @@ describe Faststep::Cursor do
     collection.insert(:name => "John Doe", :age => 25, :gender => "Male",   :postal_code => "02108")
     collection.insert(:name => "Jane Doe", :age => 22, :gender => "Female", :postal_code => "02108")
 
-    documents = collection.find({}, { "fields" => %w(name age) }).to_a
+    documents = collection.find.fields(%w(name age)).to_a
 
     documents.each do |document|
       document.has_key?("name").should be_true
