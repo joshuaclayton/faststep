@@ -9,6 +9,7 @@ static VALUE faststep_cursor_explain(VALUE);
 static VALUE faststep_cursor_skip(VALUE, VALUE);
 static VALUE faststep_cursor_limit(VALUE, VALUE);
 static VALUE faststep_cursor_fields(VALUE, VALUE);
+static VALUE faststep_cursor_order(VALUE, VALUE);
 static mongo_cursor* _faststep_build_mongo_cursor(VALUE);
 static VALUE _faststep_build_full_query(VALUE);
 #endif

@@ -14,6 +14,7 @@ void faststep_cursor_main() {
   rb_define_method(rb_cFaststepCursor, "skip",       faststep_cursor_skip, 1);
   rb_define_method(rb_cFaststepCursor, "limit",      faststep_cursor_limit, 1);
   rb_define_method(rb_cFaststepCursor, "fields",     faststep_cursor_fields, 1);
+  rb_define_method(rb_cFaststepCursor, "order",      faststep_cursor_order, 1);
   rb_define_method(rb_cFaststepCursor, "each",       faststep_cursor_each, 0);
 
   return;
@@ -75,6 +76,11 @@ static VALUE faststep_cursor_fields(VALUE self, VALUE fields) {
   return self;
 }
 
+static VALUE faststep_cursor_order(VALUE self, VALUE order) {
+  rb_iv_set(self, "@order", ruby_array_to_bson_ordered_hash(order));
+  return self;
+}
+
 static mongo_cursor* _faststep_build_mongo_cursor(VALUE self) {
   bson* selector = create_bson_from_ruby_hash(_faststep_build_full_query(self));
   bson* fields   = bson_from_ruby_array(rb_iv_get(self, "@fields"));
@@ -104,10 +110,13 @@ static mongo_cursor* _faststep_build_mongo_cursor(VALUE self) {
 }
 
 static VALUE _faststep_build_full_query(VALUE self) {
-  if(rb_iv_get(self, "@explain") == Qtrue) {
+  if(RTEST(rb_iv_get(self, "@explain")) || RTEST(rb_iv_get(self, "@order"))) {
     VALUE full_query = rb_hash_new();
     rb_hash_aset(full_query, rb_str_new2("$query"),   rb_iv_get(self, "@selector"));
     rb_hash_aset(full_query, rb_str_new2("$explain"), rb_iv_get(self, "@explain"));
+    if(RTEST(rb_iv_get(self, "@order"))) {
+      rb_hash_aset(full_query, rb_str_new2("$orderby"), rb_iv_get(self, "@order"));
+    }
     return full_query;
   } else {
     return rb_iv_get(self, "@selector");

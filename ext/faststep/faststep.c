@@ -7,6 +7,7 @@
 #include "support.h"
 
 VALUE rb_mBson;
+VALUE rb_cBsonOrderedHash;
 VALUE rb_mFaststep;
 VALUE rb_cFaststepConnection;
 VALUE rb_cFaststepDb;
@@ -19,7 +20,11 @@ VALUE rb_cFaststepOperationFailure;
 
 void Init_faststep() {
   rb_mFaststep = rb_define_module("Faststep");
-  rb_mBson     = rb_const_get(rb_cObject, rb_intern("BSON"));
+  rb_define_const(rb_mFaststep, "DESCENDING", NUM2INT(-1));
+  rb_define_const(rb_mFaststep, "ASCENDING",  NUM2INT(1));
+
+  rb_mBson            = rb_const_get(rb_cObject, rb_intern("BSON"));
+  rb_cBsonOrderedHash = rb_const_get(rb_mBson, rb_intern("OrderedHash"));
 
   faststep_connection_main();
   faststep_db_main();

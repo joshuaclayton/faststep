@@ -31,6 +31,13 @@ bson* bson_from_ruby_array(VALUE array) {
   create_bson_from_ruby_hash(hash);
 }
 
+VALUE ruby_array_to_bson_ordered_hash(VALUE array) {
+  VALUE order_as_ordered_hash = rb_funcall(rb_cBsonOrderedHash, rb_intern("new"), 0);
+  rb_iterate(rb_each, array, _map_assoc_ary_to_key_value_pair, order_as_ordered_hash);
+
+  return order_as_ordered_hash;
+}
+
 VALUE bool_to_ruby(bson_bool_t result) {
   return result ? Qtrue : Qfalse;
 }
@@ -54,4 +61,9 @@ static char* _invalid_command_description(VALUE document) {
   rb_str_concat(message, rb_hash_aref(document, rb_str_new2("errmsg")));
 
   return RSTRING_PTR(message);
+}
+
+static VALUE _map_assoc_ary_to_key_value_pair(VALUE item, VALUE hash) {
+  rb_hash_aset(hash, rb_ary_entry(item, 0), rb_ary_entry(item, 1));
+  return hash;
 }

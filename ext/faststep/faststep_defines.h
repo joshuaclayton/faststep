@@ -9,3 +9,4 @@ RUBY_EXTERN VALUE rb_cFaststepConnectionFailure;
 RUBY_EXTERN VALUE rb_cFaststepOperationFailure;
 
 RUBY_EXTERN VALUE rb_mBson;
+RUBY_EXTERN VALUE rb_cBsonOrderedHash;

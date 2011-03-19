@@ -51,6 +51,24 @@ describe Faststep::Cursor do
     documents[1]["name"].should == "John Smith"
   end
 
+  it "orders documents" do
+    10.times.map { |i| collection.insert(:name => "Person #{i}", :age => 24) }
+    collection.insert(:name => "Person 9", :age => 20)
+    collection.find.order([[:name, Faststep::DESCENDING], [:age, Faststep::ASCENDING]]).to_a.tap do |documents|
+      documents.first["name"].should == "Person 9"
+      documents.first["age"].should  == 20
+    end
+
+    collection.find.order([[:age, Faststep::DESCENDING], [:name, Faststep::ASCENDING]]).to_a.tap do |documents|
+      documents.first["name"].should == "Person 0"
+    end
+
+    collection.find.order([[:age, Faststep::DESCENDING], [:name, Faststep::DESCENDING]]).to_a.tap do |documents|
+      documents.first["name"].should == "Person 9"
+      documents.first["age"].should  == 24
+    end
+  end
+
   it "explains queries" do
     result = collection.find.explain
     result.should have_key("cursor")
