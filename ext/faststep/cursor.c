@@ -72,7 +72,7 @@ static mongo_cursor* _faststep_build_mongo_cursor(VALUE self) {
 
   int limit = 0;
   if(!NIL_P(rb_iv_get(self, "@limit"))) {
-    limit = FIX2INT(rb_iv_get(self, "@limit"));
+    limit = -1*FIX2INT(rb_iv_get(self, "@limit"));
   }
 
   int skip = 0;
