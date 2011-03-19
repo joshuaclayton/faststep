@@ -10,7 +10,7 @@ describe Faststep::Cursor do
     cursor = Faststep::Cursor.new(collection, {})
     cursor.to_a.length.should_not == 0
     cursor.each do |doc|
-      doc[:foo].should == "bar"
+      doc["foo"].should == "bar"
     end
   end
 
@@ -51,11 +51,10 @@ describe Faststep::Cursor do
     documents[1]["name"].should == "John Smith"
   end
 
-  it "caches documents" do
-    10.times { collection.insert(:foo => "bar") }
-
-    cursor = Faststep::Cursor.new(collection, {})
-    cursor.to_a.length.should == 10
-    cursor.to_a.length.should == 10
+  it "explains queries" do
+    result = collection.find({}).explain
+    result.should have_key("cursor")
+    result.should have_key("nscanned")
+    result.should have_key("n")
   end
 end

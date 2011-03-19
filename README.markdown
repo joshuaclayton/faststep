@@ -49,7 +49,7 @@ It's not nearly as smart as the mongo Ruby driver and it doesn't handle errors t
 ### Todo
 
 * Better querying
-  * Limits/hint/explain, etc.
+  * Limits/hint, etc.
 * Connection pooling
 * Safe mode
 * Allow updates to *not* be multi (currently unconfigurable)
