@@ -32,7 +32,7 @@ describe Faststep::Cursor do
   it "limits documents" do
     10.times.map { |i| collection.insert(:name => "Person #{i}") }
 
-    documents = collection.find({}).limit(2).to_a
+    documents = collection.find.limit(2).to_a
     documents.map {|doc| doc["name"] }.should == ["Person 0", "Person 1"]
 
     documents = collection.find({}).limit(1).to_a
@@ -45,14 +45,14 @@ describe Faststep::Cursor do
     collection.insert(:name => "Jane Doe",   :age => 22, :gender => "Female", :postal_code => "02108")
     collection.insert(:name => "John Smith", :age => 40, :gender => "Male",   :postal_code => "02108")
 
-    documents = collection.find({}).skip(1).to_a
+    documents = collection.find.skip(1).to_a
     documents.length.should == 2
     documents[0]["name"].should == "Jane Doe"
     documents[1]["name"].should == "John Smith"
   end
 
   it "explains queries" do
-    result = collection.find({}).explain
+    result = collection.find.explain
     result.should have_key("cursor")
     result.should have_key("nscanned")
     result.should have_key("n")

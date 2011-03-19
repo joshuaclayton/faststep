@@ -9,7 +9,7 @@ void faststep_cursor_main() {
   rb_define_attr(rb_cFaststepCursor, "collection", 1, 0);
   rb_include_module(rb_cFaststepCursor, rb_mEnumerable);
 
-  rb_define_method(rb_cFaststepCursor, "initialize", faststep_cursor_init, 2);
+  rb_define_method(rb_cFaststepCursor, "initialize", faststep_cursor_init, -1);
   rb_define_method(rb_cFaststepCursor, "explain",    faststep_cursor_explain, 0);
   rb_define_method(rb_cFaststepCursor, "skip",       faststep_cursor_skip, 1);
   rb_define_method(rb_cFaststepCursor, "limit",      faststep_cursor_limit, 1);
@@ -18,7 +18,10 @@ void faststep_cursor_main() {
   return;
 }
 
-static VALUE faststep_cursor_init(VALUE self, VALUE collection, VALUE options) {
+static VALUE faststep_cursor_init(int argc, VALUE* argv, VALUE self) {
+  VALUE collection, options;
+  rb_scan_args(argc, argv, "11", &collection, &options);
+
   rb_iv_set(self, "@collection", collection);
 
   VALUE selector = rb_hash_aref(options, rb_str_new2("selector"));

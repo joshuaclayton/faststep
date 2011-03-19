@@ -3,7 +3,7 @@
 #include "mongo.h"
 #define CURSOR_h
 void  faststep_cursor_main();
-static VALUE faststep_cursor_init(VALUE, VALUE, VALUE);
+static VALUE faststep_cursor_init(int, VALUE*, VALUE);
 static VALUE faststep_cursor_each(VALUE);
 static VALUE faststep_cursor_explain(VALUE);
 static VALUE faststep_cursor_skip(VALUE, VALUE);
