@@ -29,6 +29,17 @@ describe Faststep::Cursor do
     end
   end
 
+  it "limits documents" do
+    10.times.map { |i| collection.insert(:name => "Person #{i}") }
+
+    documents = collection.find({}, { "limit" => 2 }).to_a
+    documents.map {|doc| doc["name"] }.should == ["Person 0", "Person 1"]
+
+    documents = collection.find({}, { "limit" => -1 })
+    documents.length.should == 1
+    documents.first["name"].should == "Person 0"
+  end
+
   it "caches documents" do
     10.times { collection.insert(:foo => "bar") }
 

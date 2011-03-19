@@ -50,11 +50,16 @@ static mongo_cursor* _faststep_build_mongo_cursor(VALUE collection, VALUE option
   bson* selector = create_bson_from_ruby_hash(rb_hash_aref(options, rb_str_new2("selector")));
   bson* fields   = bson_from_ruby_array(rb_hash_aref(options, rb_str_new2("fields")));
 
+  int limit = 0;
+  if(!NIL_P(rb_hash_aref(options, rb_str_new2("limit")))) {
+    limit = FIX2INT(rb_hash_aref(options, rb_str_new2("limit")));
+  }
+
   mongo_cursor* result = mongo_find(GetFaststepConnectionForCollection(collection),
                                     RSTRING_PTR(rb_funcall(collection, rb_intern("ns"), 0)),
                                     selector,
                                     fields,
-                                    0, 0, 0);
+                                    limit, 0, 0);
 
   bson_destroy(selector);
   bson_destroy(fields);
