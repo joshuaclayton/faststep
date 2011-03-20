@@ -21,7 +21,7 @@ bson* create_bson_from_ruby_hash(VALUE hash) {
 bson* bson_from_ruby_array(VALUE array) {
   VALUE hash = rb_hash_new();
 
-  if(!NIL_P(array)) {
+  if(RTEST(array)) {
     int iterator;
     for(iterator = 0; iterator < RARRAY_LEN(array); iterator++) {
       rb_hash_aset(hash, rb_ary_entry(array, iterator), INT2NUM(1));

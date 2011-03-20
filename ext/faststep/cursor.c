@@ -28,7 +28,7 @@ static VALUE faststep_cursor_init(int argc, VALUE* argv, VALUE self) {
 
   VALUE selector = rb_hash_aref(options, rb_str_new2("selector"));
   if(NIL_P(selector)) { selector = rb_hash_new(); }
-  if(!NIL_P(rb_hash_aref(selector, rb_str_new2("$query")))) {
+  if(RTEST(rb_hash_aref(selector, rb_str_new2("$query")))) {
     rb_iv_set(self, "@selector", rb_hash_aref(selector, rb_str_new2("$query")));
   } else {
     rb_iv_set(self, "@selector", selector);
@@ -86,12 +86,12 @@ static mongo_cursor* _faststep_build_mongo_cursor(VALUE self) {
   bson* fields   = bson_from_ruby_array(rb_iv_get(self, "@fields"));
 
   int limit = 0;
-  if(!NIL_P(rb_iv_get(self, "@limit"))) {
+  if(RTEST(rb_iv_get(self, "@limit"))) {
     limit = -1*FIX2INT(rb_iv_get(self, "@limit"));
   }
 
   int skip = 0;
-  if(!NIL_P(rb_iv_get(self, "@skip"))) {
+  if(RTEST(rb_iv_get(self, "@skip"))) {
     skip = FIX2INT(rb_iv_get(self, "@skip"));
   }
 
