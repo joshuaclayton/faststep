@@ -20,14 +20,14 @@ void faststep_collection_main() {
   return;
 }
 
-static VALUE faststep_collection_init(VALUE self, VALUE name, VALUE database) {
+static VALUE faststep_collection_init(VALUE self, const VALUE name, const VALUE database) {
   rb_iv_set(self, "@name", name);
   rb_iv_set(self, "@db", database);
 
   return self;
 }
 
-VALUE faststep_collection_ns(VALUE self) {
+VALUE faststep_collection_ns(const VALUE self) {
   VALUE db = rb_iv_get(self, "@db");
 
   char ns[255] = "";
@@ -51,7 +51,7 @@ static VALUE faststep_collection_count(int argc, VALUE* argv, VALUE self) {
   return ULL2NUM(count);
 }
 
-void build_collection_ns(char* ns, char* database, char* collection) {
+void build_collection_ns(char* ns, const char* database, const char* collection) {
   strcat(ns, database);
   strcat(ns, ".");
   strcat(ns, collection);
@@ -59,7 +59,7 @@ void build_collection_ns(char* ns, char* database, char* collection) {
   return;
 }
 
-static VALUE faststep_collection_insert(VALUE self, VALUE documents) {
+static VALUE faststep_collection_insert(const VALUE self, const VALUE documents) {
   mongo_connection* conn = GetFaststepConnectionForCollection(self);
 
   VALUE ns = faststep_collection_ns(self);
@@ -73,7 +73,7 @@ static VALUE faststep_collection_insert(VALUE self, VALUE documents) {
   return Qtrue;
 }
 
-static VALUE faststep_collection_update(VALUE self, VALUE query, VALUE operations) {
+static VALUE faststep_collection_update(const VALUE self, const VALUE query, const VALUE operations) {
   bson* bson_query      = create_bson_from_ruby_hash(query);
   bson* bson_operations = create_bson_from_ruby_hash(operations);
 
@@ -102,7 +102,7 @@ static VALUE faststep_collection_remove(int argc, VALUE* argv, VALUE self) {
   return Qnil;
 }
 
-static VALUE faststep_collection_drop(VALUE self) {
+static VALUE faststep_collection_drop(const VALUE self) {
   bson_bool_t result = mongo_cmd_drop_collection(GetFaststepConnectionForCollection(self),
                                                  _ivar_name(rb_iv_get(self, "@db")),
                                                  _ivar_name(self),
@@ -111,7 +111,7 @@ static VALUE faststep_collection_drop(VALUE self) {
   return bool_to_ruby(result);
 }
 
-static VALUE faststep_collection_create_index(VALUE self, VALUE indexes) {
+static VALUE faststep_collection_create_index(const VALUE self, const VALUE indexes) {
   bson* bson_indexes = create_bson_from_ruby_hash(indexes);
 
   bson_bool_t result = mongo_create_index(GetFaststepConnectionForCollection(self),
@@ -124,13 +124,13 @@ static VALUE faststep_collection_create_index(VALUE self, VALUE indexes) {
   return bool_to_ruby(result);
 }
 
-static void _faststep_collection_insert_one(mongo_connection* conn, char* ns, VALUE document) {
+static void _faststep_collection_insert_one(mongo_connection* conn, const char* ns, const VALUE document) {
   bson* bson_document = create_bson_from_ruby_hash(document);
   mongo_insert(conn, ns, bson_document);
   bson_destroy(bson_document);
 }
 
-static void _faststep_collection_insert_batch(mongo_connection* conn, char* ns, VALUE documents) {
+static void _faststep_collection_insert_batch(mongo_connection* conn, const char* ns, const VALUE documents) {
   int total_document_count = RARRAY_LEN(documents);
   bson** bson_documents = (bson**)malloc(sizeof(bson*) * total_document_count);
 
@@ -167,7 +167,7 @@ static void _faststep_collection_insert_batch(mongo_connection* conn, char* ns, 
   }
 }
 
-static void _faststep_collection_destroy(bson** bson_documents, int document_count) {
+static void _faststep_collection_destroy(bson** bson_documents, const int document_count) {
   int iterator;
   for(iterator = 0; iterator < document_count; iterator++) {
     bson_destroy(bson_documents[iterator]);
@@ -175,11 +175,11 @@ static void _faststep_collection_destroy(bson** bson_documents, int document_cou
   return;
 }
 
-static char* _ivar_name(VALUE obj) {
-  return RSTRING_PTR(rb_iv_get(obj, "@name"));
+static char* _ivar_name(const VALUE object) {
+  return RSTRING_PTR(rb_iv_get(object, "@name"));
 }
 
-mongo_connection* GetFaststepConnectionForCollection(VALUE collection) {
+mongo_connection* GetFaststepConnectionForCollection(const VALUE collection) {
   VALUE db         = rb_iv_get(collection, "@db");
   VALUE connection = rb_iv_get(db, "@connection");
 

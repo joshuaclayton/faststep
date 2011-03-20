@@ -42,7 +42,7 @@ static VALUE faststep_cursor_init(int argc, VALUE* argv, VALUE self) {
   return self;
 }
 
-static VALUE faststep_cursor_each(VALUE self) {
+static VALUE faststep_cursor_each(const VALUE self) {
   mongo_cursor* cursor = _faststep_build_mongo_cursor(self);
 
   while(mongo_cursor_next(cursor)) {
@@ -61,22 +61,22 @@ static VALUE faststep_cursor_explain(VALUE self) {
   return result;
 }
 
-static VALUE faststep_cursor_skip(VALUE self, VALUE skip_count) {
+static VALUE faststep_cursor_skip(VALUE self, const VALUE skip_count) {
   rb_iv_set(self, "@skip", skip_count);
   return self;
 }
 
-static VALUE faststep_cursor_limit(VALUE self, VALUE limit_count) {
+static VALUE faststep_cursor_limit(VALUE self, const VALUE limit_count) {
   rb_iv_set(self, "@limit", limit_count);
   return self;
 }
 
-static VALUE faststep_cursor_fields(VALUE self, VALUE fields) {
+static VALUE faststep_cursor_fields(VALUE self, const VALUE fields) {
   rb_iv_set(self, "@fields", fields);
   return self;
 }
 
-static VALUE faststep_cursor_order(VALUE self, VALUE order) {
+static VALUE faststep_cursor_order(VALUE self, const VALUE order) {
   rb_iv_set(self, "@order", ruby_array_to_bson_ordered_hash(order));
   return self;
 }

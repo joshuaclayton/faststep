@@ -19,7 +19,7 @@ void faststep_connection_main() {
   return;
 }
 
-static VALUE faststep_connection_init(VALUE self, VALUE host, VALUE port) {
+static VALUE faststep_connection_init(VALUE self, const VALUE host, const VALUE port) {
   rb_iv_set(self, "@host", host);
   rb_iv_set(self, "@port", port);
 
@@ -28,7 +28,7 @@ static VALUE faststep_connection_init(VALUE self, VALUE host, VALUE port) {
   return self;
 }
 
-static VALUE faststep_connection_new(VALUE class, VALUE host, VALUE port) {
+static VALUE faststep_connection_new(VALUE class, const VALUE host, const VALUE port) {
   mongo_connection* conn = bson_malloc(sizeof(mongo_connection));
 
   VALUE tdata = Data_Wrap_Struct(class, NULL, mongo_destroy, conn);
@@ -53,17 +53,17 @@ static VALUE faststep_connection_connect(VALUE self) {
   return Qnil;
 }
 
-static VALUE faststep_connection_disconnect(VALUE self) {
+static VALUE faststep_connection_disconnect(const VALUE self) {
   mongo_disconnect(GetFaststepConnection(self));
 
   return Qnil;
 }
 
-static VALUE faststep_connection_connected(VALUE self) {
+static VALUE faststep_connection_connected(const VALUE self) {
   return bool_to_ruby(GetFaststepConnection(self)->connected);
 }
 
-static VALUE faststep_connection_master(VALUE self) {
+static VALUE faststep_connection_master(const VALUE self) {
   return bool_to_ruby(mongo_cmd_ismaster(GetFaststepConnection(self), NULL));
 }
 
@@ -78,7 +78,7 @@ static void _faststep_connect_or_raise(mongo_connection* conn, mongo_connection_
   return;
 }
 
-mongo_connection* GetFaststepConnection(VALUE object) {
+mongo_connection* GetFaststepConnection(const VALUE object) {
   mongo_connection* conn;
   Data_Get_Struct(object, mongo_connection, conn);
   return conn;

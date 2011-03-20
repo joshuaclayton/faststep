@@ -5,20 +5,20 @@
 #define COLLECTION_H
 
 void  faststep_collection_main();
-static VALUE faststep_collection_init(VALUE, VALUE, VALUE);
+static VALUE faststep_collection_init(VALUE, const VALUE, const VALUE);
 static VALUE faststep_collection_count(int, VALUE*, VALUE);
-static VALUE faststep_collection_insert(VALUE, VALUE);
-static VALUE faststep_collection_update(VALUE, VALUE, VALUE);
+static VALUE faststep_collection_insert(const VALUE, const VALUE);
+static VALUE faststep_collection_update(const VALUE, const VALUE, const VALUE);
 static VALUE faststep_collection_remove(int, VALUE*, VALUE);
-static VALUE faststep_collection_drop(VALUE);
-static VALUE faststep_collection_create_index(VALUE, VALUE);
-VALUE faststep_collection_ns(VALUE);
+static VALUE faststep_collection_drop(const VALUE);
+static VALUE faststep_collection_create_index(const VALUE, const VALUE);
+VALUE faststep_collection_ns(const VALUE);
 
-static void _faststep_collection_insert_one(mongo_connection*, char*, VALUE);
-static void _faststep_collection_insert_batch(mongo_connection*, char*, VALUE);
-mongo_connection* GetFaststepConnectionForCollection(VALUE);
-static void _faststep_collection_destroy(bson**, int);
+static void _faststep_collection_insert_one(mongo_connection*, const char*, const VALUE);
+static void _faststep_collection_insert_batch(mongo_connection*, const char*, const VALUE);
+mongo_connection* GetFaststepConnectionForCollection(const VALUE);
+static void _faststep_collection_destroy(bson**, const int);
 
-void build_collection_ns(char*, char*, char*);
-static char* _ivar_name(VALUE);
+void build_collection_ns(char*, const char*, const char*);
+static char* _ivar_name(const VALUE);
 #endif
