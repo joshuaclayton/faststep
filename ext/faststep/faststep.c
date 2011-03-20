@@ -17,8 +17,8 @@ VALUE rb_cFaststepCollection;
 VALUE rb_cFaststepCursor;
 VALUE rb_mFaststepSupport;
 
-VALUE rb_cFaststepConnectionFailure;
-VALUE rb_cFaststepOperationFailure;
+VALUE rb_eFaststepConnectionFailure;
+VALUE rb_eFaststepOperationFailure;
 
 void Init_faststep() {
   rb_mFaststep = rb_define_module("Faststep");

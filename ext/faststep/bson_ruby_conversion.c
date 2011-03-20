@@ -51,7 +51,7 @@ VALUE bool_to_ruby(const bson_bool_t result) {
 
 VALUE ensure_document_ok(const VALUE document) {
   if(rb_funcall(rb_mFaststepSupport, rb_intern("ok?"), 1, document) == Qfalse) {
-    rb_raise(rb_cFaststepOperationFailure, _invalid_command_description(document));
+    rb_raise(rb_eFaststepOperationFailure, _invalid_command_description(document));
   }
 }
 

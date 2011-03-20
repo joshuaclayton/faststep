@@ -5,8 +5,8 @@ RUBY_EXTERN VALUE rb_cFaststepDb;
 RUBY_EXTERN VALUE rb_cFaststepCollection;
 RUBY_EXTERN VALUE rb_cFaststepCursor;
 
-RUBY_EXTERN VALUE rb_cFaststepConnectionFailure;
-RUBY_EXTERN VALUE rb_cFaststepOperationFailure;
+RUBY_EXTERN VALUE rb_eFaststepConnectionFailure;
+RUBY_EXTERN VALUE rb_eFaststepOperationFailure;
 
 RUBY_EXTERN VALUE rb_mBson;
 RUBY_EXTERN VALUE rb_cBsonOrderedHash;

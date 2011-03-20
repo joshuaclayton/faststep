@@ -78,7 +78,7 @@ static void _faststep_connect_or_raise(mongo_connection* conn, mongo_connection_
 
   if(conn->connected == 0) {
     mongo_destroy(conn);
-    rb_raise(rb_cFaststepConnectionFailure, "unable to connect to Mongo");
+    rb_raise(rb_eFaststepConnectionFailure, "unable to connect to Mongo");
   }
 
   return;
