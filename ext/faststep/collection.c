@@ -11,6 +11,8 @@ void faststep_collection_main() {
 
   rb_define_method(rb_cFaststepCollection, "initialize",   faststep_collection_init, 2);
   rb_define_method(rb_cFaststepCollection, "ns",           faststep_collection_ns, 0);
+  rb_define_method(rb_cFaststepCollection, "find",         faststep_collection_find, -1);
+  rb_define_method(rb_cFaststepCollection, "find_one",     faststep_collection_find_one, -1);
   rb_define_method(rb_cFaststepCollection, "count",        faststep_collection_count, -1);
   rb_define_method(rb_cFaststepCollection, "insert",       faststep_collection_insert, 1);
   rb_define_method(rb_cFaststepCollection, "update",       faststep_collection_update, 2);
@@ -49,6 +51,47 @@ static VALUE faststep_collection_count(int argc, VALUE* argv, VALUE self) {
 
   bson_destroy(bson_query);
   return ULL2NUM(count);
+}
+
+static VALUE faststep_collection_find(int argc, VALUE* argv, VALUE self) {
+  VALUE selector, options;
+  rb_scan_args(argc, argv, "02", &selector, &options);
+  if(!RTEST(selector)) { selector = rb_hash_new(); }
+  if(!RTEST(options))  { options  = rb_hash_new(); }
+
+  VALUE full_query = rb_hash_new();
+  rb_hash_aset(full_query, rb_str_new2("selector"), selector);
+  rb_funcall(full_query, rb_intern("merge"), 1, options);
+
+  return rb_funcall(rb_cFaststepCursor, rb_intern("new"), 2, self, full_query);
+}
+
+static VALUE faststep_collection_find_one(int argc, VALUE* argv, VALUE self) {
+  VALUE selector, options;
+  rb_scan_args(argc, argv, "02", &selector, &options);
+
+  if(!RTEST(options)) { options = rb_hash_new(); }
+
+  VALUE full_query = rb_hash_new();
+
+  if(RTEST(rb_funcall(selector, rb_intern("is_a?"), 1, rb_cBsonObjectId))) {
+    rb_hash_aset(full_query, rb_str_new2("_id"), selector);
+  } else {
+    switch(TYPE(selector)) {
+      case T_NIL:
+        break;
+      case T_HASH:
+        full_query = selector;
+        break;
+      default:
+        rb_raise(rb_eTypeError, "selector must be an instance of BSON::ObjectId, Hash, or nil");
+    }
+  }
+
+  rb_hash_aset(options, rb_str_new2("limit"), INT2NUM(-1));
+
+  VALUE result = rb_funcall(self, rb_intern("find"), 2, full_query, options);
+  return rb_funcall(result, rb_intern("first"), 0);
 }
 
 void build_collection_ns(char* ns, const char* database, const char* collection) {

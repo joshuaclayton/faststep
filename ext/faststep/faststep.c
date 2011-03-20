@@ -8,6 +8,8 @@
 
 VALUE rb_mBson;
 VALUE rb_cBsonOrderedHash;
+VALUE rb_cBsonObjectId;
+
 VALUE rb_mFaststep;
 VALUE rb_cFaststepConnection;
 VALUE rb_cFaststepDb;
@@ -25,6 +27,7 @@ void Init_faststep() {
 
   rb_mBson            = rb_const_get(rb_cObject, rb_intern("BSON"));
   rb_cBsonOrderedHash = rb_const_get(rb_mBson, rb_intern("OrderedHash"));
+  rb_cBsonObjectId    = rb_const_get(rb_mBson, rb_intern("ObjectId"));
 
   faststep_connection_main();
   faststep_db_main();

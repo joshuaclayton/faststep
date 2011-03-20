@@ -28,6 +28,12 @@ describe Faststep::Collection do
     db["another.thing"].find({}).first["baz"].should == "qux"
   end
 
+  it "finds single documents" do
+    10.times { db["something"].insert(:foo => "bar") }
+    db["something"].find_one({:foo => "bar"})["foo"].should == "bar"
+    db["something"].find_one(BSON::ObjectId.new).should be_nil
+  end
+
   it "updates documents" do
     db["something"].insert(:foo => "bar", :something => "fun")
     db["something"].update({ :something => "fun" }, { "$set" => { :foo => "awesome" } })
