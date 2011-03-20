@@ -2,12 +2,12 @@
 #include <ruby.h>
 #include "bson.h"
 #define BSON_RUBY_CONVERSION_H
-bson* create_bson_from_ruby_hash(VALUE);
-VALUE ruby_hash_from_bson(bson*);
-VALUE ruby_array_to_bson_ordered_hash(VALUE);
-bson* bson_from_ruby_array(VALUE);
-VALUE ensure_document_ok(VALUE);
-VALUE bool_to_ruby(bson_bool_t);
-static char* _invalid_command_description(VALUE);
-static VALUE _map_assoc_ary_to_key_value_pair(VALUE, VALUE);
+bson* create_bson_from_ruby_hash(const VALUE);
+bson* bson_from_ruby_array(const VALUE);
+VALUE ruby_array_to_bson_ordered_hash(const VALUE);
+VALUE ruby_hash_from_bson(const bson*);
+VALUE bool_to_ruby(const bson_bool_t);
+VALUE ensure_document_ok(const VALUE);
+static char* _invalid_command_description(const VALUE);
+static VALUE _map_assoc_ary_to_key_value_pair(const VALUE, VALUE);
 #endif
