@@ -3,23 +3,6 @@ require "spec_helper"
 describe Faststep::Collection do
   let(:db) { $faststep_test_db }
 
-  it "inserts the correct documents" do
-    db["something"].insert(:foo => "bar")
-    db["another.thing"].insert(:baz => "qux")
-
-    db["something"].count(:foo => "bar").should == 1
-    db["something"].count(:baz => "qux").should == 0
-    db["another.thing"].count(:foo => "bar").should == 0
-    db["another.thing"].count(:foo => true).should == 0
-    db["another.thing"].count(:baz => "qux").should == 1
-  end
-
-  it "supports batch inserting" do
-    db["something"].insert([{:foo => "bar"}, {:baz => "qux"}])
-    db["something"].count.should == 2
-    db["something"].count(:foo => "bar").should == 1
-  end
-
   it "finds documents" do
     db["something"].insert(:foo => "bar")
     db["another.thing"].insert(:baz => "qux")
@@ -32,13 +15,6 @@ describe Faststep::Collection do
     10.times { db["something"].insert(:foo => "bar") }
     db["something"].find_one({:foo => "bar"})["foo"].should == "bar"
     db["something"].find_one(BSON::ObjectId.new).should be_nil
-  end
-
-  it "updates documents" do
-    db["something"].insert(:foo => "bar", :something => "fun")
-    db["something"].update({ :something => "fun" }, { "$set" => { :foo => "awesome" } })
-
-    db["something"].find({}).first["foo"].should == "awesome"
   end
 
   it "removes documents" do
@@ -90,7 +66,11 @@ describe Faststep::Collection, "queries" do
 end
 
 describe Faststep::Collection, "#insert" do
-  let(:large) {
+  let(:small_document) {
+    { "foo" => "bar" }
+  }
+
+  let(:large_document) {
     {
       'base_url' => 'http://www.example.com/test-me',
       'total_word_count' => 6743,
@@ -114,9 +94,54 @@ describe Faststep::Collection, "#insert" do
   let(:db) { $faststep_test_db }
   let(:document_count) { 50 }
 
+  it "inserts the correct documents" do
+    db["something"].insert(:foo => "bar")
+    db["another.thing"].insert(:baz => "qux")
+
+    db["something"].count(:foo => "bar").should == 1
+    db["something"].count(:baz => "qux").should == 0
+    db["another.thing"].count(:foo => "bar").should == 0
+    db["another.thing"].count(:foo => true).should == 0
+    db["another.thing"].count(:baz => "qux").should == 1
+  end
+
+  it "supports batch inserting" do
+    db["something"].insert([small_document] * document_count)
+    db["something"].count("foo" => "bar").should == document_count
+  end
+
   it "batch inserts multiple large documents" do
-    db["something"].insert([large] * document_count)
+    db["something"].insert([large_document] * document_count)
     db["something"].count.should == document_count
-    db["something"].count("base_url" => large["base_url"]).should == document_count
+    db["something"].count("base_url" => large_document["base_url"]).should == document_count
+  end
+end
+
+describe Faststep::Collection, "#update" do
+  let(:db) { $faststep_test_db }
+
+  it "updates documents" do
+    2.times { db["something"].insert(:foo => "bar", :something => "fun") }
+
+    db["something"].update({ :something => "fun" }, { "$set" => { :foo => "awesome" } })
+    db["something"].count(:foo => "awesome").should == 1
+    db["something"].count(:foo => "bar").should == 1
+  end
+
+  it "multi-updates documents" do
+    2.times { db["something"].insert(:foo => "bar", :something => "fun") }
+
+    db["something"].update({ :something => "fun" }, { "$set" => { :foo => "awesome" } }, :multi => true)
+    db["something"].count(:foo => "awesome").should == 2
+    db["something"].count(:foo => "bar").should be_zero
+  end
+
+  it "upserts documents" do
+    2.times do
+      db["something"].update({ "email" => "john@example.com" }, { "$inc" => { "count" => 1 } }, :upsert => true)
+    end
+
+    db["something"].count.should == 1
+    db["something"].find_one["count"].should == 2
   end
 end

@@ -10,7 +10,7 @@ static VALUE faststep_collection_find(int, VALUE*, const VALUE);
 static VALUE faststep_collection_find_one(int, VALUE*, const VALUE);
 static VALUE faststep_collection_count(int, VALUE*, VALUE);
 static VALUE faststep_collection_insert(const VALUE, const VALUE);
-static VALUE faststep_collection_update(const VALUE, const VALUE, const VALUE);
+static VALUE faststep_collection_update(int, VALUE*, const VALUE);
 static VALUE faststep_collection_remove(int, VALUE*, VALUE);
 static VALUE faststep_collection_drop(const VALUE);
 static VALUE faststep_collection_create_index(const VALUE, const VALUE);

@@ -2,6 +2,7 @@
 #include "connection.h"
 #include "bson_ruby_conversion.h"
 #include "faststep_defines.h"
+#include "utilities.h"
 #include <string.h>
 
 void faststep_collection_main() {
@@ -15,7 +16,7 @@ void faststep_collection_main() {
   rb_define_method(rb_cFaststepCollection, "find_one",     faststep_collection_find_one, -1);
   rb_define_method(rb_cFaststepCollection, "count",        faststep_collection_count, -1);
   rb_define_method(rb_cFaststepCollection, "insert",       faststep_collection_insert, 1);
-  rb_define_method(rb_cFaststepCollection, "update",       faststep_collection_update, 2);
+  rb_define_method(rb_cFaststepCollection, "update",       faststep_collection_update, -1);
   rb_define_method(rb_cFaststepCollection, "remove",       faststep_collection_remove, -1);
   rb_define_method(rb_cFaststepCollection, "drop",         faststep_collection_drop, 0);
   rb_define_method(rb_cFaststepCollection, "create_index", faststep_collection_create_index, 1);
@@ -116,15 +117,30 @@ static VALUE faststep_collection_insert(const VALUE self, const VALUE documents)
   return Qtrue;
 }
 
-static VALUE faststep_collection_update(const VALUE self, const VALUE query, const VALUE operations) {
+static VALUE faststep_collection_update(int argc, VALUE* argv, VALUE self) {
+  VALUE query, operations, options;
+  rb_scan_args(argc, argv, "21", &query, &operations, &options);
+
   bson* bson_query      = create_bson_from_ruby_hash(query);
   bson* bson_operations = create_bson_from_ruby_hash(operations);
+
+  int update_flags = 0;
+
+  if(TYPE(options) == T_HASH) {
+    if(rb_indiff_hash_aref(options, rb_str_new2("multi")) == Qtrue) {
+      update_flags |= MONGO_UPDATE_MULTI;
+    }
+
+    if(rb_indiff_hash_aref(options, rb_str_new2("upsert")) == Qtrue) {
+      update_flags |= MONGO_UPDATE_UPSERT;
+    }
+  }
 
   mongo_update(GetFaststepConnectionForCollection(self),
                RSTRING_PTR(faststep_collection_ns(self)),
                bson_query,
                bson_operations,
-               MONGO_UPDATE_MULTI);
+               update_flags);
 
   bson_destroy(bson_query);
   bson_destroy(bson_operations);
