@@ -50,7 +50,6 @@ It's not nearly as smart as the mongo Ruby driver and it doesn't handle errors t
 
 * Connection pooling
 * Safe mode
-* Allow updates to *not* be multi (currently unconfigurable)
 * Master/slave
 * Replica sets
 
