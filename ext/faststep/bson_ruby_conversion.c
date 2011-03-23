@@ -28,7 +28,7 @@ bson* bson_from_ruby_array(const VALUE array) {
     }
   }
 
-  create_bson_from_ruby_hash(hash);
+  return create_bson_from_ruby_hash(hash);
 }
 
 VALUE ruby_array_to_bson_ordered_hash(const VALUE array) {
@@ -53,6 +53,7 @@ VALUE ensure_document_ok(const VALUE document) {
   if(rb_funcall(rb_mFaststepSupport, rb_intern("ok?"), 1, document) == Qfalse) {
     rb_raise(rb_eFaststepOperationFailure, _invalid_command_description(document));
   }
+  return Qtrue;
 }
 
 static char* _invalid_command_description(const VALUE document) {

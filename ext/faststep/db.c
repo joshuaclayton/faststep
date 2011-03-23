@@ -34,22 +34,22 @@ static VALUE faststep_db_drop(VALUE self) {
 }
 
 static VALUE faststep_db_command(VALUE self, VALUE command) {
-  mongo_connection* conn = GetFaststepConnection(rb_iv_get(self, "@connection"));
-
-  bson* result = (bson*)bson_malloc(sizeof(bson));
-  bson_init(result, "", 1);
-
+  bson* result       = (bson*)bson_malloc(sizeof(bson));
   bson* bson_command = create_bson_from_ruby_hash(command);
 
   char ns[500] = "";
   build_collection_ns(ns, RSTRING_PTR(rb_iv_get(self, "@name")), "$cmd");
 
-  mongo_find_one(conn, ns, bson_command, NULL, result);
-
-  bson_destroy(bson_command);
+  mongo_find_one(GetFaststepConnection(rb_iv_get(self, "@connection")),
+                 ns,
+                 bson_command,
+                 NULL,
+                 result);
 
   VALUE hash = ruby_hash_from_bson(result);
+
   bson_destroy(result);
+  bson_destroy(bson_command);
 
   ensure_document_ok(hash);
 
