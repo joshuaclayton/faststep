@@ -14,9 +14,10 @@ void faststep_db_main() {
 
   rb_define_alias(rb_cFaststepDb, "[]", "collection");
 
-  rb_define_method(rb_cFaststepDb, "initialize", faststep_db_init, 2);
-  rb_define_method(rb_cFaststepDb, "drop",       faststep_db_drop, 0);
-  rb_define_method(rb_cFaststepDb, "command",    faststep_db_command, 1);
+  rb_define_method(rb_cFaststepDb, "initialize",     faststep_db_init, 2);
+  rb_define_method(rb_cFaststepDb, "drop",           faststep_db_drop, 0);
+  rb_define_method(rb_cFaststepDb, "command",        faststep_db_command, 1);
+  rb_define_method(rb_cFaststepDb, "get_last_error", faststep_db_get_last_error, 0);
 }
 
 static VALUE faststep_db_init(VALUE self, VALUE name, VALUE connection) {
@@ -53,4 +54,17 @@ static VALUE faststep_db_command(VALUE self, VALUE command) {
   ensure_document_ok(hash);
 
   return hash;
+}
+
+static VALUE faststep_db_get_last_error(VALUE self) {
+  bson* result = (bson*)bson_malloc(sizeof(bson));
+
+  mongo_cmd_get_last_error(GetFaststepConnection(rb_iv_get(self, "@connection")),
+                           RSTRING_PTR(rb_iv_get(self, "@name")),
+                           result);
+
+  VALUE last_error = ruby_hash_from_bson(result);
+  bson_destroy(result);
+
+  return last_error;
 }

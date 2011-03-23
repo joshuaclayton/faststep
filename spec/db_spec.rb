@@ -25,4 +25,13 @@ describe Faststep::Db do
     subject["something"].count.should be_zero
     subject["another.thing"].count.should be_zero
   end
+
+  it "gets the last error" do
+    subject["something"].insert(:foo => "bar")
+    subject.get_last_error.tap do |result|
+      result.should have_key("ok")
+      result.should have_key("n")
+      result.should have_key("err")
+    end
+  end
 end
