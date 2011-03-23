@@ -31,7 +31,7 @@ static VALUE faststep_connection_init(VALUE self, const VALUE host, const VALUE 
 }
 
 static VALUE faststep_connection_new(VALUE class, const VALUE host, const VALUE port) {
-  mongo_connection* conn = bson_malloc(sizeof(mongo_connection));
+  mongo_connection* conn = (mongo_connection*)bson_malloc(sizeof(mongo_connection));
 
   VALUE tdata = Data_Wrap_Struct(class, NULL, mongo_destroy, conn);
 
@@ -45,7 +45,7 @@ static VALUE faststep_connection_new(VALUE class, const VALUE host, const VALUE 
 }
 
 static VALUE faststep_connection_connect(VALUE self) {
-  mongo_connection_options* options = bson_malloc(sizeof(mongo_connection_options));
+  mongo_connection_options* options = (mongo_connection_options*)bson_malloc(sizeof(mongo_connection_options));
 
   strcpy(options->host, RSTRING_PTR(rb_iv_get(self, "@host")));
   options->port = NUM2INT(rb_iv_get(self, "@port"));

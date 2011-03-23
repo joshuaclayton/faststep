@@ -2,7 +2,7 @@
 #include "faststep_defines.h"
 
 bson* create_bson_from_ruby_hash(const VALUE hash) {
-  bson* document = bson_malloc(sizeof(bson));
+  bson* document = (bson*)bson_malloc(sizeof(bson));
 
   if(NIL_P(hash)) {
     bson_empty(document);

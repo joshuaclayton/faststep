@@ -36,7 +36,7 @@ static VALUE faststep_db_drop(VALUE self) {
 static VALUE faststep_db_command(VALUE self, VALUE command) {
   mongo_connection* conn = GetFaststepConnection(rb_iv_get(self, "@connection"));
 
-  bson* result = bson_malloc(sizeof(bson));
+  bson* result = (bson*)bson_malloc(sizeof(bson));
   bson_init(result, "", 1);
 
   bson* bson_command = create_bson_from_ruby_hash(command);
