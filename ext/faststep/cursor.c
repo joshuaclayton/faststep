@@ -48,6 +48,8 @@ static VALUE faststep_cursor_each(const VALUE self) {
   while(mongo_cursor_next(cursor)) {
     rb_yield(ruby_hash_from_bson(&cursor->current));
   }
+
+  mongo_cursor_destroy(cursor);
 }
 
 static VALUE faststep_cursor_explain(VALUE self) {
@@ -85,15 +87,13 @@ static mongo_cursor* _faststep_build_mongo_cursor(VALUE self) {
   bson* selector = create_bson_from_ruby_hash(_faststep_build_full_query(self));
   bson* fields   = bson_from_ruby_array(rb_iv_get(self, "@fields"));
 
-  int limit = 0;
-  if(RTEST(rb_iv_get(self, "@limit"))) {
-    limit = -1*FIX2INT(rb_iv_get(self, "@limit"));
-  }
+  int limit = 0,
+      skip  = 0;
+  VALUE limit_value = rb_iv_get(self, "@limit"),
+        skip_value  = rb_iv_get(self, "@skip");
 
-  int skip = 0;
-  if(RTEST(rb_iv_get(self, "@skip"))) {
-    skip = FIX2INT(rb_iv_get(self, "@skip"));
-  }
+  if(RTEST(limit_value)) { limit = -1*FIX2INT(limit_value); }
+  if(RTEST(skip_value))  { skip  = FIX2INT(skip_value); }
 
   VALUE collection = rb_iv_get(self, "@collection");
 
@@ -110,15 +110,19 @@ static mongo_cursor* _faststep_build_mongo_cursor(VALUE self) {
 }
 
 static VALUE _faststep_build_full_query(VALUE self) {
-  if(RTEST(rb_iv_get(self, "@explain")) || RTEST(rb_iv_get(self, "@order"))) {
+  VALUE order_value    = rb_iv_get(self, "@order"),
+        explain_value  = rb_iv_get(self, "@explain"),
+        selector_value = rb_iv_get(self, "@selector");
+
+  if(RTEST(explain_value) || RTEST(order_value)) {
     VALUE full_query = rb_hash_new();
-    rb_hash_aset(full_query, rb_str_new2("$query"),   rb_iv_get(self, "@selector"));
-    rb_hash_aset(full_query, rb_str_new2("$explain"), rb_iv_get(self, "@explain"));
-    if(RTEST(rb_iv_get(self, "@order"))) {
-      rb_hash_aset(full_query, rb_str_new2("$orderby"), rb_iv_get(self, "@order"));
+    rb_hash_aset(full_query, rb_str_new2("$query"), selector_value);
+    rb_hash_aset(full_query, rb_str_new2("$explain"), explain_value);
+    if(RTEST(order_value)) {
+      rb_hash_aset(full_query, rb_str_new2("$orderby"), order_value);
     }
     return full_query;
   } else {
-    return rb_iv_get(self, "@selector");
+    return selector_value;
   }
 }
