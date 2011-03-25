@@ -9,6 +9,8 @@ void faststep_cursor_main() {
   rb_define_attr(rb_cFaststepCursor, "collection", 1, 0);
   rb_include_module(rb_cFaststepCursor, rb_mEnumerable);
 
+  rb_define_singleton_method(rb_cFaststepCursor, "new", faststep_cursor_new, -1);
+
   rb_define_method(rb_cFaststepCursor, "initialize", faststep_cursor_init, -1);
   rb_define_method(rb_cFaststepCursor, "explain",    faststep_cursor_explain, 0);
   rb_define_method(rb_cFaststepCursor, "skip",       faststep_cursor_skip, 1);
@@ -42,14 +44,29 @@ static VALUE faststep_cursor_init(int argc, VALUE* argv, VALUE self) {
   return self;
 }
 
+static VALUE faststep_cursor_new(int argc, VALUE* argv, VALUE class) {
+  faststep_cursor* fs_cursor = (faststep_cursor*)bson_malloc(sizeof(faststep_cursor));
+  mongo_cursor* cursor = (mongo_cursor*)bson_malloc(sizeof(mongo_cursor));
+
+  fs_cursor->cursor = cursor;
+  fs_cursor->initialized = 0;
+
+  VALUE tdata = Data_Wrap_Struct(class, NULL, _faststep_destroy_cursor, fs_cursor);
+
+  rb_obj_call_init(tdata, argc, argv);
+  return tdata;
+}
+
 static VALUE faststep_cursor_each(const VALUE self) {
-  mongo_cursor* cursor = _faststep_build_mongo_cursor(self);
+  faststep_cursor* fs_cursor;
+  Data_Get_Struct(self, faststep_cursor, fs_cursor);
 
-  while(mongo_cursor_next(cursor)) {
-    rb_yield(ruby_hash_from_bson(&cursor->current));
+  fs_cursor->cursor      = _faststep_build_mongo_cursor(self);
+  fs_cursor->initialized = 1;
+
+  while(mongo_cursor_next(fs_cursor->cursor)) {
+    rb_yield(ruby_hash_from_bson(&fs_cursor->cursor->current));
   }
-
-  mongo_cursor_destroy(cursor);
 }
 
 static VALUE faststep_cursor_explain(VALUE self) {
@@ -125,4 +142,15 @@ static VALUE _faststep_build_full_query(VALUE self) {
   } else {
     return selector_value;
   }
+}
+
+static void _faststep_destroy_cursor(faststep_cursor* cursor) {
+  if(cursor->initialized == 1) {
+    mongo_cursor_destroy(cursor->cursor);
+    cursor->initialized = 0;
+  }
+
+  free(cursor);
+
+  return;
 }
