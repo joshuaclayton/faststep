@@ -65,6 +65,6 @@ static char* _invalid_command_description(const VALUE document) {
 }
 
 static VALUE _map_assoc_ary_to_key_value_pair(const VALUE item, VALUE hash) {
-  rb_hash_aset(hash, rb_ary_entry(item, 0), rb_ary_entry(item, 1));
+  rb_funcall(hash, rb_intern("[]="), 2, rb_ary_entry(item, 0), rb_ary_entry(item, 1));
   return hash;
 }
