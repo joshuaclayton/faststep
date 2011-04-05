@@ -4,8 +4,8 @@
 #define CONNECTION_H
 void faststep_connection_main();
 
-static VALUE faststep_connection_init(VALUE, const VALUE, const VALUE);
-static VALUE faststep_connection_new(VALUE, const VALUE, const VALUE);
+static VALUE faststep_connection_init(int, VALUE*, VALUE);
+static VALUE faststep_connection_new(int, VALUE*, VALUE);
 static VALUE faststep_connection_connect(VALUE);
 static VALUE faststep_connection_disconnect(const VALUE);
 static VALUE faststep_connection_connected(const VALUE);

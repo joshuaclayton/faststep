@@ -12,7 +12,11 @@ Add to your Gemfile and `bundle`; otherwise,
 
 Connect to mongo:
 
-    >> conn = Faststep::Connection.new("127.0.0.1", 27017)
+    >> conn = Faststep::Connection.new # defaults to 127.0.0.1:27017
+
+Or connect to a custom host and port:
+
+    >> conn = Faststep::Connection.new("custom.host", 12345)
 
 Pick a database:
 

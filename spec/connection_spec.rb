@@ -3,17 +3,10 @@ require "spec_helper"
 describe Faststep::Connection do
   subject { Faststep::Connection.new("127.0.0.1", 27017) }
 
-  it "knows its host" do
-    subject.host == "127.0.0.1"
-  end
-
-  it "knows its port" do
-    subject.port == 27017
-  end
-
-  it "connects to Mongo automatically" do
-    subject.should be_connected
-  end
+  its(:host) { should == "127.0.0.1" }
+  its(:port) { should == 27017 }
+  it { should be_connected }
+  it { should be_master }
 
   it "closes a connection to Mongo" do
     subject.disconnect!
@@ -21,10 +14,14 @@ describe Faststep::Connection do
     subject.connect!
     subject.should be_connected
   end
+end
 
-  it "connects to master by default" do
-    subject.should be_master
-  end
+describe Faststep::Connection, "host and port defaults" do
+  subject { Faststep::Connection.new }
+  its(:host) { should == "127.0.0.1" }
+  its(:port) { should == 27017 }
+  it { should be_connected }
+  it { should be_master }
 end
 
 describe Faststep::Connection, "that doesn't connect due to misconfiguration" do

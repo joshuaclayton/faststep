@@ -9,9 +9,9 @@ void faststep_connection_main() {
   rb_define_attr(rb_cFaststepConnection, "host", 1, 0);
   rb_define_attr(rb_cFaststepConnection, "port", 1, 0);
 
-  rb_define_singleton_method(rb_cFaststepConnection, "new", faststep_connection_new, 2);
+  rb_define_singleton_method(rb_cFaststepConnection, "new", faststep_connection_new, -1);
 
-  rb_define_method(rb_cFaststepConnection, "initialize",  faststep_connection_init, 2);
+  rb_define_method(rb_cFaststepConnection, "initialize",  faststep_connection_init, -1);
   rb_define_method(rb_cFaststepConnection, "connect!",    faststep_connection_connect, 0);
   rb_define_method(rb_cFaststepConnection, "disconnect!", faststep_connection_disconnect, 0);
   rb_define_method(rb_cFaststepConnection, "connected?",  faststep_connection_connected, 0);
@@ -21,7 +21,15 @@ void faststep_connection_main() {
   return;
 }
 
-static VALUE faststep_connection_init(VALUE self, const VALUE host, const VALUE port) {
+/* static VALUE faststep_connection_init(VALUE self, const VALUE host, const VALUE port) { */
+static VALUE faststep_connection_init(int argc, VALUE* argv, VALUE self) {
+  VALUE host, port;
+
+  rb_scan_args(argc, argv, "02", &host, &port);
+
+  if(!RTEST(host)) { host = rb_str_new2("127.0.0.1"); }
+  if(!RTEST(port)) { port = INT2NUM(27017); }
+
   rb_iv_set(self, "@host", host);
   rb_iv_set(self, "@port", port);
 
@@ -30,16 +38,12 @@ static VALUE faststep_connection_init(VALUE self, const VALUE host, const VALUE 
   return self;
 }
 
-static VALUE faststep_connection_new(VALUE class, const VALUE host, const VALUE port) {
+static VALUE faststep_connection_new(int argc, VALUE* argv, VALUE class) {
   mongo_connection* conn = (mongo_connection*)bson_malloc(sizeof(mongo_connection));
 
   VALUE tdata = Data_Wrap_Struct(class, NULL, mongo_destroy, conn);
 
-  VALUE argv[2];
-  argv[0] = host;
-  argv[1] = port;
-
-  rb_obj_call_init(tdata, 2, argv);
+  rb_obj_call_init(tdata, argc, argv);
 
   return tdata;
 }
