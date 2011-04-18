@@ -24,6 +24,15 @@ describe Faststep::Connection, "host and port defaults" do
   it { should be_master }
 end
 
+describe Faststep::Connection, "getting a database" do
+  subject { Faststep::Connection.new }
+
+  it "uses a database" do
+    subject[$faststep_test_db.name]["something"].insert(:foo => "bar")
+    $faststep_test_db["something"].count.should == 1
+  end
+end
+
 describe Faststep::Connection, "that doesn't connect due to misconfiguration" do
   it "raises an exception" do
     expect { Faststep::Connection.new("totally-bogus", 12345) }.to raise_error(Faststep::ConnectionFailure)

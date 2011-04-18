@@ -18,10 +18,11 @@ void faststep_connection_main() {
   rb_define_method(rb_cFaststepConnection, "master?",     faststep_connection_master, 0);
   rb_define_method(rb_cFaststepConnection, "db",          faststep_connection_db, 1);
 
+  rb_define_alias(rb_cFaststepConnection, "[]", "db");
+
   return;
 }
 
-/* static VALUE faststep_connection_init(VALUE self, const VALUE host, const VALUE port) { */
 static VALUE faststep_connection_init(int argc, VALUE* argv, VALUE self) {
   VALUE host, port;
 
