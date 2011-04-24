@@ -178,3 +178,15 @@ describe Faststep::Collection, "#remove" do
     db["something"].remove({}, { :safe => true })["n"].should == 6
   end
 end
+
+describe Faststep::Collection, "indexes" do
+  let(:collection) { $faststep_test_db["something"] }
+
+  it "creates indexes" do
+    collection.create_index(:foo => 1)
+    collection.index_information.should == {
+      "_id_" => { "name" => "_id_", "ns" => collection.ns, "key" => { "_id" => 1 }, "v" => 0 },
+      "_foo" => { "name" => "_foo", "ns" => collection.ns, "key" => { "foo" => 1 }, "v" => 0 }
+    }
+  end
+end

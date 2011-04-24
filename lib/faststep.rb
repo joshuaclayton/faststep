@@ -5,6 +5,7 @@ module Faststep
   DESCENDING = -1
   autoload :Db,         "faststep/db"
   autoload :Connection, "faststep/connection"
+  autoload :Collection, "faststep/collection"
   autoload :Cursor,     "faststep/cursor"
 end
 
