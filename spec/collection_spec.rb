@@ -190,3 +190,14 @@ describe Faststep::Collection, "indexes" do
     }
   end
 end
+
+describe Faststep::Collection, "#rename" do
+  let(:collection) { $faststep_test_db["something"] }
+
+  it "renames collections" do
+    collection.insert(:foo => "bar")
+    collection.rename("something_else")
+    collection.name.should == "something_else"
+    $faststep_test_db["something_else"].count.should == 1
+  end
+end
