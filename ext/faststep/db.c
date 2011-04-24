@@ -37,11 +37,10 @@ static VALUE faststep_db_command(VALUE self, VALUE command) {
   bson* result       = (bson*)bson_malloc(sizeof(bson));
   bson* bson_command = create_bson_from_ruby_hash(command);
 
-  char ns[500] = "";
-  build_collection_ns(ns, RSTRING_PTR(rb_iv_get(self, "@name")), "$cmd");
+  VALUE ns = build_collection_ns(rb_iv_get(self, "@name"), rb_str_new2("$cmd"));
 
   mongo_find_one(GetFaststepConnection(rb_iv_get(self, "@connection")),
-                 ns,
+                 RSTRING_PTR(ns),
                  bson_command,
                  NULL,
                  result);

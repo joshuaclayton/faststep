@@ -38,12 +38,10 @@ static VALUE faststep_collection_connection(const VALUE self) {
 }
 
 VALUE faststep_collection_ns(const VALUE self) {
-  VALUE db = rb_iv_get(self, "@db");
+  VALUE db_name         = rb_str_new2(_ivar_name(rb_iv_get(self, "@db")));
+  VALUE collection_name = rb_str_new2(_ivar_name(self));
 
-  char ns[255] = "";
-  build_collection_ns(ns, _ivar_name(db), _ivar_name(self));
-
-  return rb_str_new2(ns);
+  return build_collection_ns(db_name, collection_name);
 }
 
 static VALUE faststep_collection_count(int argc, VALUE* argv, VALUE self) {
@@ -102,12 +100,14 @@ static VALUE faststep_collection_find_one(int argc, VALUE* argv, VALUE self) {
   return rb_funcall(result, rb_intern("first"), 0);
 }
 
-void build_collection_ns(char* ns, const char* database, const char* collection) {
-  strcat(ns, database);
-  strcat(ns, ".");
-  strcat(ns, collection);
+VALUE build_collection_ns(const VALUE db_name, const VALUE collection_name) {
+  VALUE ns = rb_str_new2("");
 
-  return;
+  rb_str_concat(ns, db_name);
+  rb_str_concat(ns, rb_str_new2("."));
+  rb_str_concat(ns, collection_name);
+
+  return ns;
 }
 
 static VALUE faststep_collection_insert(int argc, VALUE* argv, const VALUE self) {

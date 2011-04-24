@@ -23,6 +23,6 @@ mongo_connection* GetFaststepConnectionForCollection(const VALUE);
 static void _faststep_collection_destroy(bson**, const int);
 static VALUE _faststep_safe_operation(const VALUE, const VALUE);
 
-void build_collection_ns(char*, const char*, const char*);
+VALUE build_collection_ns(const VALUE, const VALUE);
 static char* _ivar_name(const VALUE);
 #endif
