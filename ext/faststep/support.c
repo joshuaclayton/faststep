@@ -8,13 +8,10 @@ void faststep_support_main() {
 }
 
 static VALUE faststep_support_ok(VALUE self, VALUE document) {
-  VALUE ok_value = rb_hash_aref(document, rb_str_new2("ok"));
-
-  bson_bool_t result = 0;
-
-  switch(TYPE(ok_value)) {
-    case T_FLOAT: result = FIX2INT(ok_value); break;
-    case T_TRUE:  result = 1; break;
+  bson_bool_t result = 1;
+  if(RTEST(rb_hash_aref(document, rb_str_new2("err"))) ||
+      RTEST(rb_hash_aref(document, rb_str_new2("errmsg")))) {
+    result = 0;
   }
 
   return bool_to_ruby(result);

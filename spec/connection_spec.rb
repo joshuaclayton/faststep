@@ -28,8 +28,7 @@ describe Faststep::Connection, "getting a database" do
   subject { Faststep::Connection.new }
 
   it "uses a database" do
-    subject[$faststep_test_db.name]["something"].insert(:foo => "bar")
-    $faststep_test_db["something"].count.should == 1
+    subject[$faststep_test_db.name].should be_a(Faststep::Db)
   end
 end
 

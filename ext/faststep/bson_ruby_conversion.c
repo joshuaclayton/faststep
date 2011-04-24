@@ -56,10 +56,19 @@ VALUE ensure_document_ok(const VALUE document) {
 }
 
 static char* _invalid_command_description(const VALUE document) {
-  VALUE message = rb_str_new2("Invalid command (");
-  rb_str_concat(message, rb_inspect(rb_hash_aref(document, rb_str_new2("bad cmd"))));
-  rb_str_concat(message, rb_str_new2("): "));
-  rb_str_concat(message, rb_hash_aref(document, rb_str_new2("errmsg")));
+  VALUE message = rb_str_new2("");
+
+  if(RTEST(rb_hash_aref(document, rb_str_new2("bad cmd")))) {
+    rb_str_concat(message, rb_str_new2("Invalid command ("));
+    rb_str_concat(message, rb_inspect(rb_hash_aref(document, rb_str_new2("bad cmd"))));
+    rb_str_concat(message, rb_str_new2("): "));
+    rb_str_concat(message, rb_hash_aref(document, rb_str_new2("errmsg")));
+  } else {
+    rb_str_concat(message, rb_str_new2("Error ("));
+    rb_str_concat(message, rb_inspect(rb_hash_aref(document, rb_str_new2("code"))));
+    rb_str_concat(message, rb_str_new2("): "));
+    rb_str_concat(message, rb_hash_aref(document, rb_str_new2("err")));
+  }
 
   return RSTRING_PTR(message);
 }

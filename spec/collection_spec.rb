@@ -17,16 +17,6 @@ describe Faststep::Collection do
     db["something"].find_one(BSON::ObjectId.new).should be_nil
   end
 
-  it "removes documents" do
-    db["something"].insert(5.times.map { {:foo => "bar", :something => "fun"} })
-    db["something"].insert(:foo => "bar", :baz => "what!")
-
-    db["something"].remove(:baz => "what!")
-    db["something"].count.should == 5
-    db["something"].remove
-    db["something"].count.should be_zero
-  end
-
   it "drops collections" do
     db["something"].insert(:foo => "bar")
     db["something"].drop
@@ -105,6 +95,20 @@ describe Faststep::Collection, "#insert" do
     db["another.thing"].count(:baz => "qux").should == 1
   end
 
+  it "inserts documents in safe mode" do
+    document_id = BSON::ObjectId.new
+    db["something"].insert({ :_id => document_id, :something => "great" }, { :safe => true })
+
+    expect {
+      db["something"].insert({ :_id => document_id, :something => "great" })
+    }.to_not raise_error
+
+    expect {
+      db["something"].insert({ :_id => document_id, :something => "great" },
+                             { :safe => true })
+    }.to raise_error(Faststep::OperationFailure, /Error \(11000\): .*duplicate key error index/)
+  end
+
   it "supports batch inserting" do
     db["something"].insert([small_document] * document_count)
     db["something"].count("foo" => "bar").should == document_count
@@ -143,5 +147,34 @@ describe Faststep::Collection, "#update" do
 
     db["something"].count.should == 1
     db["something"].find_one["count"].should == 2
+  end
+
+  it "updates documents in safe mode" do
+    expect {
+      db["something"].update({},
+                             { "$set" => { "invalid." => 1 } },
+                             { :safe => true })
+    }.to raise_error(Faststep::OperationFailure, /Error \(10149\): Invalid mod field name/)
+  end
+end
+
+describe Faststep::Collection, "#remove" do
+  let(:db) { $faststep_test_db }
+
+  before do
+    db["something"].insert(5.times.map { {:foo => "bar", :something => "fun"} })
+    db["something"].insert(:foo => "bar", :baz => "what!")
+
+  end
+
+  it "removes documents" do
+    db["something"].remove(:baz => "what!")
+    db["something"].count.should == 5
+    db["something"].remove
+    db["something"].count.should be_zero
+  end
+
+  it "removes documents in safe mode" do
+    db["something"].remove({}, { :safe => true })["n"].should == 6
   end
 end

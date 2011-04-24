@@ -15,7 +15,7 @@ void faststep_collection_main() {
   rb_define_method(rb_cFaststepCollection, "find",         faststep_collection_find, -1);
   rb_define_method(rb_cFaststepCollection, "find_one",     faststep_collection_find_one, -1);
   rb_define_method(rb_cFaststepCollection, "count",        faststep_collection_count, -1);
-  rb_define_method(rb_cFaststepCollection, "insert",       faststep_collection_insert, 1);
+  rb_define_method(rb_cFaststepCollection, "insert",       faststep_collection_insert, -1);
   rb_define_method(rb_cFaststepCollection, "update",       faststep_collection_update, -1);
   rb_define_method(rb_cFaststepCollection, "remove",       faststep_collection_remove, -1);
   rb_define_method(rb_cFaststepCollection, "drop",         faststep_collection_drop, 0);
@@ -103,8 +103,11 @@ void build_collection_ns(char* ns, const char* database, const char* collection)
   return;
 }
 
-static VALUE faststep_collection_insert(const VALUE self, const VALUE documents) {
+static VALUE faststep_collection_insert(int argc, VALUE* argv, const VALUE self) {
   mongo_connection* conn = GetFaststepConnectionForCollection(self);
+
+  VALUE documents, options;
+  rb_scan_args(argc, argv, "11", &documents, &options);
 
   VALUE ns = faststep_collection_ns(self);
 
@@ -114,7 +117,7 @@ static VALUE faststep_collection_insert(const VALUE self, const VALUE documents)
     _faststep_collection_insert_one(conn, RSTRING_PTR(ns), documents);
   }
 
-  return Qtrue;
+  return _faststep_safe_operation(self, options);
 }
 
 static VALUE faststep_collection_update(int argc, VALUE* argv, VALUE self) {
@@ -145,12 +148,12 @@ static VALUE faststep_collection_update(int argc, VALUE* argv, VALUE self) {
   bson_destroy(bson_query);
   bson_destroy(bson_operations);
 
-  return Qtrue;
+  return _faststep_safe_operation(self, options);
 }
 
 static VALUE faststep_collection_remove(int argc, VALUE* argv, VALUE self) {
-  VALUE query;
-  rb_scan_args(argc, argv, "01", &query);
+  VALUE query, options;
+  rb_scan_args(argc, argv, "02", &query, &options);
 
   bson* bson_query = create_bson_from_ruby_hash(query);
 
@@ -158,7 +161,8 @@ static VALUE faststep_collection_remove(int argc, VALUE* argv, VALUE self) {
                RSTRING_PTR(faststep_collection_ns(self)),
                bson_query);
   bson_destroy(bson_query);
-  return Qnil;
+
+  return _faststep_safe_operation(self, options);
 }
 
 static VALUE faststep_collection_drop(const VALUE self) {
@@ -243,4 +247,22 @@ mongo_connection* GetFaststepConnectionForCollection(const VALUE collection) {
   VALUE connection = rb_iv_get(db, "@connection");
 
   return GetFaststepConnection(connection);
+}
+
+static VALUE _faststep_safe_operation(const VALUE self, const VALUE options) {
+  int safe_mode = 0;
+
+  if(TYPE(options) == T_HASH) {
+    if(rb_indiff_hash_aref(options, rb_str_new2("safe")) == Qtrue) {
+      safe_mode = 1;
+    }
+  }
+
+  if(safe_mode) {
+    VALUE document = rb_funcall(rb_iv_get(self, "@db"), rb_intern("get_last_error"), 0);
+    ensure_document_ok(document);
+    return document;
+  } else {
+    return Qtrue;
+  }
 }

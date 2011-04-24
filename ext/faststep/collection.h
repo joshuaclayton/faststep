@@ -9,7 +9,7 @@ static VALUE faststep_collection_init(VALUE, const VALUE, const VALUE);
 static VALUE faststep_collection_find(int, VALUE*, const VALUE);
 static VALUE faststep_collection_find_one(int, VALUE*, const VALUE);
 static VALUE faststep_collection_count(int, VALUE*, VALUE);
-static VALUE faststep_collection_insert(const VALUE, const VALUE);
+static VALUE faststep_collection_insert(int, VALUE*, const VALUE);
 static VALUE faststep_collection_update(int, VALUE*, const VALUE);
 static VALUE faststep_collection_remove(int, VALUE*, VALUE);
 static VALUE faststep_collection_drop(const VALUE);
@@ -20,6 +20,7 @@ static void _faststep_collection_insert_one(mongo_connection*, const char*, cons
 static void _faststep_collection_insert_batch(mongo_connection*, const char*, const VALUE);
 mongo_connection* GetFaststepConnectionForCollection(const VALUE);
 static void _faststep_collection_destroy(bson**, const int);
+static VALUE _faststep_safe_operation(const VALUE, const VALUE);
 
 void build_collection_ns(char*, const char*, const char*);
 static char* _ivar_name(const VALUE);

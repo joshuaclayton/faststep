@@ -35,7 +35,7 @@ Have some fun!
     >> db["users"].find(:name => /0$/).to_a
     => [{"_id"=>BSON::ObjectId('4d83c53555ca381d572c1cf7'), "name"=>"Person 0"}, {"_id"=>BSON::ObjectId('4d83c53555ca381d572c1d01'), "name"=>"Person 10"}, ...]
     >> db["users"].remove(:name => /0$/)
-    => nil
+    => true
     >> db["users"].count(:name => /0$/)
     => 0
     >> db["users"].count
@@ -47,13 +47,13 @@ Have some fun!
 
 ### Caveats
 
-This is under heavy development (what gem isn't?) but there's a lot of stuff to be implemented still. Some methods return nil (remove, for example) when they shouldn't.
+This is under heavy development (what gem isn't?) but there's a lot of stuff to be implemented still.
 It's not nearly as smart as the mongo Ruby driver and it doesn't handle errors that well.
 
 ### Todo
 
 * Connection pooling
-* Safe mode
+* Safe mode (per database or connection)
 * Master/slave
 * Replica sets
 
