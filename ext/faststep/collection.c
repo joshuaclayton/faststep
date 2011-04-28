@@ -21,7 +21,7 @@ void faststep_collection_main() {
   rb_define_method(rb_cFaststepCollection, "update",       faststep_collection_update, -1);
   rb_define_method(rb_cFaststepCollection, "remove",       faststep_collection_remove, -1);
   rb_define_method(rb_cFaststepCollection, "drop",         faststep_collection_drop, 0);
-  rb_define_method(rb_cFaststepCollection, "create_index", faststep_collection_create_index, 1);
+  rb_define_method(rb_cFaststepCollection, "create_index", faststep_collection_create_index, -1);
   return;
 }
 
@@ -181,13 +181,29 @@ static VALUE faststep_collection_drop(const VALUE self) {
   return bool_to_ruby(result);
 }
 
-static VALUE faststep_collection_create_index(const VALUE self, const VALUE indexes) {
+static VALUE faststep_collection_create_index(int argc, VALUE* argv, const VALUE self) {
+  VALUE indexes, options;
+
+  rb_scan_args(argc, argv, "02", &indexes, &options);
   bson* bson_indexes = create_bson_from_ruby_hash(indexes);
+
+
+  int index_flags = 0;
+
+  if(TYPE(options) == T_HASH) {
+    if(rb_indiff_hash_aref(options, rb_str_new2("unique")) == Qtrue) {
+      index_flags |= MONGO_INDEX_UNIQUE;
+    }
+
+    if(rb_indiff_hash_aref(options, rb_str_new2("drop_dups")) == Qtrue) {
+      index_flags |= MONGO_INDEX_DROP_DUPS;
+    }
+  }
 
   bson_bool_t result = mongo_create_index(GetFaststepConnectionForCollection(self),
                                           RSTRING_PTR(faststep_collection_ns(self)),
                                           bson_indexes,
-                                          0,
+                                          index_flags,
                                           NULL);
   bson_destroy(bson_indexes);
 

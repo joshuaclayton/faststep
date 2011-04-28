@@ -189,6 +189,18 @@ describe Faststep::Collection, "indexes" do
       "_foo" => { "name" => "_foo", "ns" => collection.ns, "key" => { "foo" => 1 }, "v" => 0 }
     }
   end
+
+  it "creates unique indexes" do
+    collection.create_index({ :foo => 1 }, { :unique => true })
+    2.times { collection.insert(:foo => 2) }
+    collection.count.should == 1
+  end
+
+  it "creates unique indexes that drop dups" do
+    2.times { collection.insert(:foo => 2) }
+    collection.create_index({ :foo => 1 }, { :unique => true, :drop_dups => true })
+    collection.count.should == 1
+  end
 end
 
 describe Faststep::Collection, "#rename" do

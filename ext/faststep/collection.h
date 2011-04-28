@@ -14,7 +14,7 @@ static VALUE faststep_collection_insert(int, VALUE*, const VALUE);
 static VALUE faststep_collection_update(int, VALUE*, const VALUE);
 static VALUE faststep_collection_remove(int, VALUE*, VALUE);
 static VALUE faststep_collection_drop(const VALUE);
-static VALUE faststep_collection_create_index(const VALUE, const VALUE);
+static VALUE faststep_collection_create_index(int, VALUE*, const VALUE);
 VALUE faststep_collection_ns(const VALUE);
 
 static void _faststep_collection_insert_one(mongo_connection*, const char*, const VALUE);
