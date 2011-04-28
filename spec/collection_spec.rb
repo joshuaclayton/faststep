@@ -201,6 +201,13 @@ describe Faststep::Collection, "indexes" do
     collection.create_index({ :foo => 1 }, { :unique => true, :drop_dups => true })
     collection.count.should == 1
   end
+
+  it "drops indexes" do
+    collection.create_index(:foo => 1)
+    collection.index_information.keys.should include("_foo")
+    collection.drop_index("_foo")
+    collection.index_information.keys.should_not include("_foo")
+  end
 end
 
 describe Faststep::Collection, "#rename" do

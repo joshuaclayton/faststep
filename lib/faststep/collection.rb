@@ -13,5 +13,10 @@ module Faststep
       @name = new_name
       true
     end
+
+    def drop_index(index_name)
+      db.command(:deleteIndexes => self.name, :index => index_name)
+      true
+    end
   end
 end
