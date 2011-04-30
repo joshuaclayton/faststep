@@ -9,7 +9,10 @@ module Faststep
     end
 
     def rename(new_name)
-      connection["admin"].command(:renameCollection => ns, :to => "#{db.name}.#{new_name}")
+      command = BSON::OrderedHash.new
+      command[:renameCollection] = ns
+      command[:to] = "#{db.name}.#{new_name}"
+      connection["admin"].command(command)
       @name = new_name
       true
     end
