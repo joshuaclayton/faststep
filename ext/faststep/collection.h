@@ -5,8 +5,6 @@
 #define COLLECTION_H
 
 void  faststep_collection_main();
-static VALUE faststep_collection_init(VALUE, const VALUE, const VALUE);
-static VALUE faststep_collection_connection(const VALUE);
 static VALUE faststep_collection_find(int, VALUE*, const VALUE);
 static VALUE faststep_collection_find_one(int, VALUE*, const VALUE);
 static VALUE faststep_collection_count(int, VALUE*, VALUE);

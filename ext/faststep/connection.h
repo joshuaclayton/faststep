@@ -10,7 +10,6 @@ static VALUE faststep_connection_connect(VALUE);
 static VALUE faststep_connection_disconnect(const VALUE);
 static VALUE faststep_connection_connected(const VALUE);
 static VALUE faststep_connection_master(const VALUE);
-static VALUE faststep_connection_db(const VALUE, const VALUE);
 
 mongo_connection* GetFaststepConnection(const VALUE);
 

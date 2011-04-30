@@ -9,22 +9,9 @@
 void faststep_db_main() {
   rb_cFaststepDb = rb_define_class_under(rb_mFaststep, "Db", rb_cObject);
 
-  rb_define_attr(rb_cFaststepDb, "name", 1, 0);
-  rb_define_attr(rb_cFaststepDb, "connection", 1, 0);
-
-  rb_define_alias(rb_cFaststepDb, "[]", "collection");
-
-  rb_define_method(rb_cFaststepDb, "initialize",     faststep_db_init, 2);
   rb_define_method(rb_cFaststepDb, "drop",           faststep_db_drop, 0);
   rb_define_method(rb_cFaststepDb, "command",        faststep_db_command, 1);
   rb_define_method(rb_cFaststepDb, "get_last_error", faststep_db_get_last_error, 0);
-}
-
-static VALUE faststep_db_init(VALUE self, VALUE name, VALUE connection) {
-  rb_iv_set(self, "@name", name);
-  rb_iv_set(self, "@connection", connection);
-
-  return self;
 }
 
 static VALUE faststep_db_drop(VALUE self) {

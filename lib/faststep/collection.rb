@@ -1,5 +1,16 @@
 module Faststep
   class Collection
+    attr_reader :name, :db
+
+    def initialize(name, db)
+      @name = name
+      @db   = db
+    end
+
+    def connection
+      db.connection
+    end
+
     def index_information
       info = {}
       db["system.indexes"].find({:ns => ns}).each do |index|

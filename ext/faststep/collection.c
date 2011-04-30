@@ -8,11 +8,6 @@
 void faststep_collection_main() {
   rb_cFaststepCollection = rb_define_class_under(rb_mFaststep, "Collection", rb_cObject);
 
-  rb_define_attr(rb_cFaststepCollection, "name", 1, 0);
-  rb_define_attr(rb_cFaststepCollection, "db", 1, 0);
-
-  rb_define_method(rb_cFaststepCollection, "initialize",   faststep_collection_init, 2);
-  rb_define_method(rb_cFaststepCollection, "connection",   faststep_collection_connection, 0);
   rb_define_method(rb_cFaststepCollection, "ns",           faststep_collection_ns, 0);
   rb_define_method(rb_cFaststepCollection, "find",         faststep_collection_find, -1);
   rb_define_method(rb_cFaststepCollection, "find_one",     faststep_collection_find_one, -1);
@@ -23,18 +18,6 @@ void faststep_collection_main() {
   rb_define_method(rb_cFaststepCollection, "drop",         faststep_collection_drop, 0);
   rb_define_method(rb_cFaststepCollection, "create_index", faststep_collection_create_index, -1);
   return;
-}
-
-static VALUE faststep_collection_init(VALUE self, const VALUE name, const VALUE database) {
-  rb_iv_set(self, "@name", name);
-  rb_iv_set(self, "@db", database);
-
-  return self;
-}
-
-static VALUE faststep_collection_connection(const VALUE self) {
-  VALUE db = rb_iv_get(self, "@db");
-  return rb_iv_get(db, "@connection");
 }
 
 VALUE faststep_collection_ns(const VALUE self) {
