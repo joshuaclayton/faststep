@@ -5,7 +5,7 @@ module Faststep
     attr_reader :host, :port
 
     def db(database_name)
-      Faststep::Db.new(database_name, self)
+      Db.new(database_name, self)
     end
 
     alias [] db
