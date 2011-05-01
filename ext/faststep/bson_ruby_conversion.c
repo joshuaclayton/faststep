@@ -50,12 +50,13 @@ VALUE bool_to_ruby(const bson_bool_t result) {
 
 VALUE ensure_document_ok(const VALUE document) {
   if(rb_funcall(rb_mFaststepSupport, rb_intern("ok?"), 1, document) == Qfalse) {
-    rb_raise(rb_eFaststepOperationFailure, _invalid_command_description(document));
+    VALUE e = rb_exc_new3(rb_eFaststepOperationFailure, _invalid_command_description(document));
+    rb_exc_raise(e);
   }
   return Qtrue;
 }
 
-static char* _invalid_command_description(const VALUE document) {
+static VALUE _invalid_command_description(const VALUE document) {
   VALUE message = rb_str_new2("");
 
   if(RTEST(rb_hash_aref(document, rb_str_new2("bad cmd")))) {
@@ -70,7 +71,7 @@ static char* _invalid_command_description(const VALUE document) {
     rb_str_concat(message, rb_hash_aref(document, rb_str_new2("err")));
   }
 
-  return RSTRING_PTR(message);
+  return message;
 }
 
 static VALUE _map_assoc_ary_to_key_value_pair(const VALUE item, VALUE hash) {
