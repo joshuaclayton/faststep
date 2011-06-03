@@ -13,5 +13,5 @@ static VALUE faststep_connection_master(const VALUE);
 
 mongo_connection* GetFaststepConnection(const VALUE);
 
-static void _faststep_connect_or_raise(mongo_connection*, mongo_connection_options*);
+static void _faststep_connect_or_raise(mongo_connection*, mongo_host_port*);
 #endif

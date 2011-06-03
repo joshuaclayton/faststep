@@ -58,7 +58,7 @@ static VALUE faststep_cursor_each(const VALUE self) {
   fs_cursor->cursor      = _faststep_build_mongo_cursor(self);
   fs_cursor->initialized = 1;
 
-  while(mongo_cursor_next(fs_cursor->cursor)) {
+  while(MONGO_OK == mongo_cursor_next(fs_cursor->cursor)) {
     rb_yield(ruby_hash_from_bson(&fs_cursor->cursor->current));
   }
 }

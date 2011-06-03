@@ -43,12 +43,12 @@ static VALUE faststep_connection_new(int argc, VALUE* argv, VALUE class) {
 }
 
 static VALUE faststep_connection_connect(VALUE self) {
-  mongo_connection_options* options = (mongo_connection_options*)bson_malloc(sizeof(mongo_connection_options));
+  mongo_host_port* host_port = (mongo_host_port*)bson_malloc(sizeof(mongo_host_port));
 
-  strcpy(options->host, RSTRING_PTR(rb_iv_get(self, "@host")));
-  options->port = NUM2INT(rb_iv_get(self, "@port"));
+  strcpy(host_port->host, RSTRING_PTR(rb_iv_get(self, "@host")));
+  host_port->port = NUM2INT(rb_iv_get(self, "@port"));
 
-  _faststep_connect_or_raise(GetFaststepConnection(self), options);
+  _faststep_connect_or_raise(GetFaststepConnection(self), host_port);
 
   return Qnil;
 }
@@ -67,8 +67,8 @@ static VALUE faststep_connection_master(const VALUE self) {
   return bool_to_ruby(mongo_cmd_ismaster(GetFaststepConnection(self), NULL));
 }
 
-static void _faststep_connect_or_raise(mongo_connection* conn, mongo_connection_options* options) {
-  mongo_connect(conn, options);
+static void _faststep_connect_or_raise(mongo_connection* conn, mongo_host_port* host_port) {
+  mongo_connect(conn, host_port->host, host_port->port);
 
   if(conn->connected == 0) {
     mongo_destroy(conn);
