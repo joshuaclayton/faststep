@@ -15,7 +15,7 @@ void faststep_db_main() {
 }
 
 static VALUE faststep_db_drop(VALUE self) {
-  mongo_connection* conn = GetFaststepConnection(rb_iv_get(self, "@connection"));
+  mongo* conn = GetFaststepConnection(rb_iv_get(self, "@connection"));
 
   return bool_to_ruby(mongo_cmd_drop_db(conn, RSTRING_PTR(rb_iv_get(self, "@name"))));
 }
@@ -35,7 +35,9 @@ static VALUE faststep_db_command(VALUE self, VALUE command) {
   VALUE hash = ruby_hash_from_bson(result);
 
   bson_destroy(result);
+  free(result);
   bson_destroy(bson_command);
+  free(bson_command);
 
   ensure_document_ok(hash);
 
@@ -51,6 +53,7 @@ static VALUE faststep_db_get_last_error(VALUE self) {
 
   VALUE last_error = ruby_hash_from_bson(result);
   bson_destroy(result);
+  free(result);
 
   return last_error;
 }

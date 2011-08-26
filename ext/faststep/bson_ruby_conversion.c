@@ -13,6 +13,7 @@ bson* create_bson_from_ruby_hash(const VALUE hash) {
     bson_init_data(temp_bson, RSTRING_PTR(query));
     bson_copy(document, temp_bson);
     bson_destroy(temp_bson);
+    free(temp_bson);
   }
 
   return document;

@@ -15,9 +15,9 @@ static VALUE faststep_collection_drop(const VALUE);
 static VALUE faststep_collection_create_index(int, VALUE*, const VALUE);
 VALUE faststep_collection_ns(const VALUE);
 
-static void _faststep_collection_insert_one(mongo_connection*, const char*, const VALUE);
-static void _faststep_collection_insert_batch(mongo_connection*, const char*, const VALUE);
-mongo_connection* GetFaststepConnectionForCollection(const VALUE);
+static void _faststep_collection_insert_one(mongo*, const char*, const VALUE);
+static void _faststep_collection_insert_batch(mongo*, const char*, const VALUE);
+mongo* GetFaststepConnectionForCollection(const VALUE);
 static void _faststep_collection_destroy(bson**, const int);
 static VALUE _faststep_safe_operation(const VALUE, const VALUE);
 

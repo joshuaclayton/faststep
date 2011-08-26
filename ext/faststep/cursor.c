@@ -100,7 +100,9 @@ static mongo_cursor* _faststep_build_mongo_cursor(VALUE self) {
                                     limit, skip, 0);
 
   bson_destroy(selector);
+  free(selector);
   bson_destroy(fields);
+  free(fields);
 
   return result;
 }

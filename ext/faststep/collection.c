@@ -39,6 +39,7 @@ static VALUE faststep_collection_count(int argc, VALUE* argv, VALUE self) {
                               bson_query);
 
   bson_destroy(bson_query);
+  free(bson_query);
   return ULL2NUM(count);
 }
 
@@ -94,7 +95,7 @@ VALUE build_collection_ns(const VALUE db_name, const VALUE collection_name) {
 }
 
 static VALUE faststep_collection_insert(int argc, VALUE* argv, const VALUE self) {
-  mongo_connection* conn = GetFaststepConnectionForCollection(self);
+  mongo* conn = GetFaststepConnectionForCollection(self);
 
   VALUE documents, options;
   rb_scan_args(argc, argv, "11", &documents, &options);
@@ -136,7 +137,9 @@ static VALUE faststep_collection_update(int argc, VALUE* argv, VALUE self) {
                update_flags);
 
   bson_destroy(bson_query);
+  free(bson_query);
   bson_destroy(bson_operations);
+  free(bson_operations);
 
   return _faststep_safe_operation(self, options);
 }
@@ -151,6 +154,7 @@ static VALUE faststep_collection_remove(int argc, VALUE* argv, VALUE self) {
                RSTRING_PTR(faststep_collection_ns(self)),
                bson_query);
   bson_destroy(bson_query);
+  free(bson_query);
 
   return _faststep_safe_operation(self, options);
 }
@@ -170,7 +174,6 @@ static VALUE faststep_collection_create_index(int argc, VALUE* argv, const VALUE
   rb_scan_args(argc, argv, "02", &indexes, &options);
   bson* bson_indexes = create_bson_from_ruby_hash(indexes);
 
-
   int index_flags = 0;
 
   if(TYPE(options) == T_HASH) {
@@ -189,17 +192,19 @@ static VALUE faststep_collection_create_index(int argc, VALUE* argv, const VALUE
                                           index_flags,
                                           NULL);
   bson_destroy(bson_indexes);
+  free(bson_indexes);
 
   return bool_to_ruby(result);
 }
 
-static void _faststep_collection_insert_one(mongo_connection* conn, const char* ns, const VALUE document) {
+static void _faststep_collection_insert_one(mongo* conn, const char* ns, const VALUE document) {
   bson* bson_document = create_bson_from_ruby_hash(document);
   mongo_insert(conn, ns, bson_document);
   bson_destroy(bson_document);
+  free(bson_document);
 }
 
-static void _faststep_collection_insert_batch(mongo_connection* conn, const char* ns, const VALUE documents) {
+static void _faststep_collection_insert_batch(mongo* conn, const char* ns, const VALUE documents) {
   int total_document_count = RARRAY_LEN(documents);
   bson** bson_documents = (bson**)malloc(sizeof(bson*) * total_document_count);
 
@@ -240,6 +245,7 @@ static void _faststep_collection_destroy(bson** bson_documents, const int docume
   int iterator;
   for(iterator = 0; iterator < document_count; iterator++) {
     bson_destroy(bson_documents[iterator]);
+    free(bson_documents[iterator]);
   }
   return;
 }
@@ -248,7 +254,7 @@ static char* _ivar_name(const VALUE object) {
   return RSTRING_PTR(rb_iv_get(object, "@name"));
 }
 
-mongo_connection* GetFaststepConnectionForCollection(const VALUE collection) {
+mongo* GetFaststepConnectionForCollection(const VALUE collection) {
   VALUE db         = rb_iv_get(collection, "@db");
   VALUE connection = rb_iv_get(db, "@connection");
 
