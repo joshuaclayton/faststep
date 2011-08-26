@@ -10,7 +10,7 @@ bson* create_bson_from_ruby_hash(const VALUE hash) {
     VALUE byte_buffer = rb_funcall(rb_mBson, rb_intern("serialize"), 3, hash, Qfalse, Qfalse);
     VALUE query = rb_funcall(byte_buffer, rb_intern("to_s"), 0);
     bson* temp_bson = bson_malloc(sizeof(bson));
-    bson_init(temp_bson, RSTRING_PTR(query), 0);
+    bson_init_data(temp_bson, RSTRING_PTR(query));
     bson_copy(document, temp_bson);
     bson_destroy(temp_bson);
   }
