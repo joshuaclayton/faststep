@@ -22,8 +22,12 @@ static VALUE faststep_cursor_init(int argc, VALUE* argv, VALUE self) {
 
   rb_iv_set(self, "@collection", collection);
 
+  if(NIL_P(options)) { options = rb_hash_new(); }
+
   VALUE selector = rb_hash_aref(options, rb_str_new2("selector"));
+
   if(NIL_P(selector)) { selector = rb_hash_new(); }
+
   if(RTEST(rb_hash_aref(selector, rb_str_new2("$query")))) {
     rb_iv_set(self, "@selector", rb_hash_aref(selector, rb_str_new2("$query")));
   } else {

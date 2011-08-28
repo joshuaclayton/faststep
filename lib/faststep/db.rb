@@ -28,7 +28,7 @@ module Faststep
     private
 
     def collections_info
-      Cursor.new(Collection.new("system.namespaces", self), :selector => {}).to_a
+      Cursor.new(Collection.new("system.namespaces", self)).to_a
     end
   end
 end
