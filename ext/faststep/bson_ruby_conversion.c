@@ -19,6 +19,7 @@ bson* create_bson_from_ruby_hash(const VALUE hash) {
 
     bson_init_data(document, data);
   }
+  document->finished = 1;
 
   return document;
 }
