@@ -5,15 +5,19 @@ bson* create_bson_from_ruby_hash(const VALUE hash) {
   bson* document = (bson*)bson_malloc(sizeof(bson));
 
   if(NIL_P(hash)) {
-    bson_empty(document);
+    static char *empty = "\005\0\0\0\0";
+    char *data = bson_malloc(sizeof(empty));
+    strncpy(data, empty, sizeof(empty));
+
+    bson_init_data(document, data);
   } else {
     VALUE byte_buffer = rb_funcall(rb_mBson, rb_intern("serialize"), 3, hash, Qfalse, Qfalse);
-    VALUE query = rb_funcall(byte_buffer, rb_intern("to_s"), 0);
-    bson* temp_bson = bson_malloc(sizeof(bson));
-    bson_init_data(temp_bson, RSTRING_PTR(query));
-    bson_copy(document, temp_bson);
-    bson_destroy(temp_bson);
-    free(temp_bson);
+    VALUE serialized_bson = rb_funcall(byte_buffer, rb_intern("to_s"), 0);
+
+    char* data = bson_malloc(RSTRING_LEN(serialized_bson));
+    memmove(data, RSTRING_PTR(serialized_bson), RSTRING_LEN(serialized_bson));
+
+    bson_init_data(document, data);
   }
 
   return document;
