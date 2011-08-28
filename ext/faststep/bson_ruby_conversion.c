@@ -53,6 +53,11 @@ VALUE bool_to_ruby(const bson_bool_t result) {
   return result ? Qtrue : Qfalse;
 }
 
+void faststep_bson_destroy(bson* document) {
+  bson_destroy(document);
+  free(document);
+}
+
 VALUE ensure_document_ok(const VALUE document) {
   if(rb_funcall(rb_mFaststepSupport, rb_intern("ok?"), 1, document) == Qfalse) {
     VALUE e = rb_exc_new3(rb_eFaststepOperationFailure, _invalid_command_description(document));

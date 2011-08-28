@@ -38,8 +38,7 @@ static VALUE faststep_collection_count(int argc, VALUE* argv, VALUE self) {
                               _ivar_name(self),
                               bson_query);
 
-  bson_destroy(bson_query);
-  free(bson_query);
+  faststep_bson_destroy(bson_query);
   return ULL2NUM(count);
 }
 
@@ -136,10 +135,8 @@ static VALUE faststep_collection_update(int argc, VALUE* argv, VALUE self) {
                bson_operations,
                update_flags);
 
-  bson_destroy(bson_query);
-  free(bson_query);
-  bson_destroy(bson_operations);
-  free(bson_operations);
+  faststep_bson_destroy(bson_query);
+  faststep_bson_destroy(bson_operations);
 
   return _faststep_safe_operation(self, options);
 }
@@ -153,8 +150,8 @@ static VALUE faststep_collection_remove(int argc, VALUE* argv, VALUE self) {
   mongo_remove(GetFaststepConnectionForCollection(self),
                RSTRING_PTR(faststep_collection_ns(self)),
                bson_query);
-  bson_destroy(bson_query);
-  free(bson_query);
+
+  faststep_bson_destroy(bson_query);
 
   return _faststep_safe_operation(self, options);
 }
@@ -191,8 +188,7 @@ static VALUE faststep_collection_create_index(int argc, VALUE* argv, const VALUE
                                           bson_indexes,
                                           index_flags,
                                           NULL);
-  bson_destroy(bson_indexes);
-  free(bson_indexes);
+  faststep_bson_destroy(bson_indexes);
 
   return bool_to_ruby(result);
 }
@@ -200,8 +196,7 @@ static VALUE faststep_collection_create_index(int argc, VALUE* argv, const VALUE
 static void _faststep_collection_insert_one(mongo* conn, const char* ns, const VALUE document) {
   bson* bson_document = create_bson_from_ruby_hash(document);
   mongo_insert(conn, ns, bson_document);
-  bson_destroy(bson_document);
-  free(bson_document);
+  faststep_bson_destroy(bson_document);
 }
 
 static void _faststep_collection_insert_batch(mongo* conn, const char* ns, const VALUE documents) {
@@ -244,8 +239,7 @@ static void _faststep_collection_insert_batch(mongo* conn, const char* ns, const
 static void _faststep_collection_destroy(bson** bson_documents, const int document_count) {
   int iterator;
   for(iterator = 0; iterator < document_count; iterator++) {
-    bson_destroy(bson_documents[iterator]);
-    free(bson_documents[iterator]);
+    faststep_bson_destroy(bson_documents[iterator]);
   }
   return;
 }

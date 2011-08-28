@@ -34,10 +34,8 @@ static VALUE faststep_db_command(VALUE self, VALUE command) {
 
   VALUE hash = ruby_hash_from_bson(result);
 
-  bson_destroy(result);
-  free(result);
-  bson_destroy(bson_command);
-  free(bson_command);
+  faststep_bson_destroy(result);
+  faststep_bson_destroy(bson_command);
 
   ensure_document_ok(hash);
 
@@ -52,8 +50,8 @@ static VALUE faststep_db_get_last_error(VALUE self) {
                            result);
 
   VALUE last_error = ruby_hash_from_bson(result);
-  bson_destroy(result);
-  free(result);
+
+  faststep_bson_destroy(result);
 
   return last_error;
 }
