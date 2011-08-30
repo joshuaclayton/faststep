@@ -62,7 +62,7 @@ static VALUE faststep_cursor_each(const VALUE self) {
   fs_cursor->cursor      = _faststep_build_mongo_cursor(self);
   fs_cursor->initialized = 1;
 
-  while(mongo_cursor_next(fs_cursor->cursor)) {
+  while(mongo_cursor_next(fs_cursor->cursor) == MONGO_OK) {
     rb_yield(ruby_hash_from_bson(&fs_cursor->cursor->current));
   }
 }
@@ -92,7 +92,7 @@ static mongo_cursor* _faststep_build_mongo_cursor(VALUE self) {
   VALUE limit_value = rb_iv_get(self, "@limit"),
         skip_value  = rb_iv_get(self, "@skip");
 
-  if(RTEST(limit_value)) { limit = -1*FIX2INT(limit_value); }
+  if(RTEST(limit_value)) { limit = FIX2INT(limit_value); }
   if(RTEST(skip_value))  { skip  = FIX2INT(skip_value); }
 
   VALUE collection = rb_iv_get(self, "@collection");
