@@ -44,7 +44,7 @@ static VALUE faststep_cursor_init(int argc, VALUE* argv, VALUE self) {
 
 static VALUE faststep_cursor_new(int argc, VALUE* argv, VALUE class) {
   faststep_cursor* fs_cursor = (faststep_cursor*)bson_malloc(sizeof(faststep_cursor));
-  mongo_cursor* cursor = (mongo_cursor*)bson_malloc(sizeof(mongo_cursor));
+  mongo_cursor*    cursor    = (mongo_cursor*)bson_malloc(sizeof(mongo_cursor));
 
   fs_cursor->cursor = cursor;
   fs_cursor->initialized = 0;
@@ -59,11 +59,14 @@ static VALUE faststep_cursor_each(const VALUE self) {
   faststep_cursor* fs_cursor;
   Data_Get_Struct(self, faststep_cursor, fs_cursor);
 
-  fs_cursor->cursor      = _faststep_build_mongo_cursor(self);
-  fs_cursor->initialized = 1;
+  fs_cursor->cursor = _faststep_build_mongo_cursor(self);
 
-  while(mongo_cursor_next(fs_cursor->cursor) == MONGO_OK) {
-    rb_yield(ruby_hash_from_bson(&fs_cursor->cursor->current));
+  if(fs_cursor->cursor) {
+    fs_cursor->initialized = 1;
+
+    while(mongo_cursor_next(fs_cursor->cursor) == MONGO_OK) {
+      rb_yield(ruby_hash_from_bson(&fs_cursor->cursor->current));
+    }
   }
 }
 
@@ -71,10 +74,17 @@ static VALUE faststep_cursor_explain(VALUE self) {
   rb_iv_set(self, "@explain", Qtrue);
 
   mongo_cursor* cursor = _faststep_build_mongo_cursor(self);
-  mongo_cursor_next(cursor);
 
-  VALUE result = ruby_hash_from_bson(&cursor->current);
-  mongo_cursor_destroy(cursor);
+  VALUE result = Qnil;
+
+  if(cursor) {
+    if(mongo_cursor_next(cursor) == MONGO_OK) {
+      result = ruby_hash_from_bson(&cursor->current);
+    }
+
+    mongo_cursor_destroy(cursor);
+  }
+
   return result;
 }
 
@@ -127,13 +137,13 @@ static VALUE _faststep_build_full_query(VALUE self) {
   }
 }
 
-static void _faststep_destroy_cursor(faststep_cursor* cursor) {
-  if(cursor->initialized == 1) {
-    mongo_cursor_destroy(cursor->cursor);
-    cursor->initialized = 0;
+static void _faststep_destroy_cursor(faststep_cursor* fs_cursor) {
+  if(fs_cursor->initialized == 1) {
+    mongo_cursor_destroy(fs_cursor->cursor);
+    fs_cursor->initialized = 0;
   }
 
-  free(cursor);
+  free(fs_cursor);
 
   return;
 }
